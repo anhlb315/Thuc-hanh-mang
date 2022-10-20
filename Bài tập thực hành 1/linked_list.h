@@ -6,8 +6,6 @@ typedef struct _Account {
     struct _Account *next;
 } Account;
 
-int numAccount;
-
 Account *create_new_account(char *username, char *password, int status);
 Account *add_account(Account *account, char *username, char *password, int status);
 int check_user(Account *account, char *username);

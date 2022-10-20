@@ -1,10 +1,11 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "linked_list.h"
 
 int main() {
     int menu;
     Account *acc = NULL;
-    acc = ReadAccount(acc);
+    acc = read_account(acc);
     while (1)
     {
         printf("\nUSER MANAGEMENT PROGRAM\n");
@@ -16,9 +17,8 @@ int main() {
         printf("5. Change Password\n");
         printf("6. Sign Out\n");
         printf("Your choice (1-6, other to quit):\n");
-        scanf("%d", &menu);
-        switch (menu)
-        {
+        scanf("%d", &menu); fflush(stdin);
+        switch (menu) {
         case 1:
             acc = register_account(acc);
             break;

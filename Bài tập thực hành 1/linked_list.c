@@ -1,6 +1,9 @@
 #include "linked_list.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+
+int number_of_account;
 
 Account *create_new_account(char *username, char *password, int status)
 {
@@ -13,40 +16,31 @@ Account *create_new_account(char *username, char *password, int status)
     return p;
 }
 
-Account *add_account(Account *account, char *username, char *password, int status)
-{
-    if (account == NULL)
-    {
+Account *add_account(Account *account, char *username, char *password, int status) {
+    if (account == NULL) {
         Account *temp = create_new_account(username, password, status);
         return temp;
     }
-    else
-    {
-        if (check_user(account, username))
-        {
+    else {
+        if (check_user(account, username)) {
             Account *cur = account;
-            while (cur->next != NULL)
-            {
+            while (cur->next != NULL) {
                 cur = cur->next;
             }
             Account *temp = create_new_account(username, password, status);
             cur->next = temp;
             return account;
         }
-        else
-        {
+        else {
             return NULL;
         }
     }
 }
 
-int check_user(Account *account, char *username)
-{
+int check_user(Account *account, char *username) {
     Account *cur = account;
-    while (cur != NULL)
-    {
-        if (strcmp(cur->username, username) == 0)
-        {
+    while (cur != NULL) {
+        if (strcmp(cur->username, username) == 0) {
             return 0;
         }
         cur = cur->next;
@@ -103,63 +97,53 @@ void check_signed_in(Account *account, char *username)
     }
 }
 
-Account *read_account(Account *acc)
-{
+Account *read_account(Account *acc) {
     char username[30];
     char password[30];
     int status;
-    numAccount = 0;
-    FILE *inp = fopen("account.txt", "r");
-    if (!inp)
-    {
+    number_of_account = 0;
+    FILE *inp = fopen("nguoidung.txt", "r");
+    if (!inp) {
         printf("Error: Can't open this file! \n");
         return NULL;
     }
 
-    do
-    {
-        if (fscanf(inp, "%s %s %d", username, password, &status) > 0)
-        {
+    do {
+        if (fscanf(inp, "%s %s %d", username, password, &status) > 0) {
             acc = add_account(acc, username, password, status);
-            numAccount++;
+            number_of_account++;
         }
-        else
-            break;
-    } while (1 == 1);
+        else break;
+    } while (1);
     fclose(inp);
     return acc;
 }
 
-Account *register_account(Account *acc)
-{
+Account *register_account(Account *acc) {
     printf("----Welcome to Register function.----\n");
 
     char username[30];
     char password[30];
     printf("Input your Username: ");
-    scanf("%s", username);
-    if (check_user(acc, username) != 0)
-    {
+    scanf("%s", username); fflush(stdin);
+    if (check_user(acc, username) != 0) {
         printf("Input your Password: ");
-        scanf("%s", password);
-        acc = add_account(acc, username, password, 1);
-        numAccount++;
+        scanf("%s", password); fflush(stdin);
+        acc = add_account(acc, username, password, 2);
+        number_of_account++;
         printf("Successful registration. \n");
         update_file(acc);
     }
-    else
-    {
+    else {
         printf("This account existed! \n");
     }
     return acc;
 }
 
-void update_file(Account *acc)
-{
-    FILE *inp = fopen("account.txt", "w");
+void update_file(Account *acc) {
+    FILE *inp = fopen("nguoidung.txt", "w+");
     Account *cur = acc;
-    while (cur != NULL)
-    {
+    while (cur != NULL) {
         fprintf(inp, "%s %s %d\n", cur->username, cur->password, cur->status);
         cur = cur->next;
     }
