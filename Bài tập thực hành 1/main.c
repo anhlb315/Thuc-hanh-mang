@@ -23,6 +23,7 @@ int main() {
             acc = register_account(acc);
             break;
         case 2:
+            activate(acc);
             break;
         case 3:
             sign_in(acc);
