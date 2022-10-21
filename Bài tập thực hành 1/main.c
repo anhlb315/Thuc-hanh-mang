@@ -32,6 +32,7 @@ int main() {
             search(acc);
             break;
         case 5:
+            change_password(acc);
             break;
         case 6:
             sign_out(acc);

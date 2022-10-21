@@ -20,3 +20,4 @@ void search(Account *account);
 void sign_out(Account *account);
 void free_list(Account *account);
 void activate(Account *account);
+void change_password(Account * account);

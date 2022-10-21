@@ -350,3 +350,43 @@ void activate(Account *acc)
     }
     return;
 }
+
+void change_password(Account *acc)
+{
+    printf("----Welcome to change password function.----\n");
+    char username[30];
+    char old_password[30];
+    char new_password[30];
+
+    printf("Input your Username: ");
+    scanf("%s", username);
+    if (check_user(acc, username) != 0)
+    {
+        printf("Account does not exist!\n");
+        return;
+    }
+
+    printf("Input your Old Password: ");
+    scanf("%s", old_password);
+    if (check_password(acc, old_password) != 0)
+    {
+        printf("Password is incorrect!\n");
+        return;
+    }
+
+    printf("Input your New Password: ");
+    scanf("%s", new_password);
+
+    Account *cur = acc;
+    while (cur != NULL)
+    {
+        if (strcmp(cur->username, username) == 0)
+        {
+            strcpy(cur->password, new_password);
+            printf("Change password successfully.");
+        }
+        cur = cur->next;
+    }
+    update_file(acc);
+    return;
+}
