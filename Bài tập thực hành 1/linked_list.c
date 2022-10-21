@@ -71,7 +71,7 @@ int check_password(Account *account, char *password)
     return 1;
 }
 
-int CheckBlocked(Account *account, char *username)
+int check_blocked(Account *account, char *username)
 {
     Account *cur = account;
     while (cur != NULL)
@@ -173,7 +173,7 @@ void update_file(Account *acc)
 
 void sign_in(Account *acc)
 {
-    printf("----Welcome to sign_in function.----\n");
+    printf("----Welcome to Sign in function.----\n");
     char username[30];
     char password[30];
 
@@ -187,11 +187,11 @@ void sign_in(Account *acc)
     }
     else
     {
-        if (CheckBlocked(acc, username) == 0)
+        if (check_blocked(acc, username) == 0)
         {
             printf("Account is blocked, you can't access this account !\n");
             return;
-        }
+        }   
         else
         {
             while (n > 0)
@@ -206,15 +206,6 @@ void sign_in(Account *acc)
                 else
                 {
                     printf("Hello %s, sign in is successful!\n", username);
-                    Account *cur = acc;
-                    while (cur != NULL)
-                    {
-                        if (strcmp(cur->username, username) == 0)
-                        {
-                            cur->is_signed_in = 1;
-                        }
-                        cur = cur->next;
-                    }
                     return;
                 }
             }
@@ -247,7 +238,7 @@ void search(Account *acc)
     }
     else
     {
-        if (CheckBlocked(acc, username) == 0)
+        if (check_blocked(acc, username) == 0)
         {
             printf("Account is blocked!\n");
         }
