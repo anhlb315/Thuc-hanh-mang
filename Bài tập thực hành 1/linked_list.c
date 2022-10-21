@@ -71,7 +71,7 @@ int check_password(Account *account, char *password)
     return 1;
 }
 
-int check_blocked(Account *account, char *username)
+int check_status(Account *account, char *username)
 {
     Account *cur = account;
     while (cur != NULL)
@@ -84,23 +84,14 @@ int check_blocked(Account *account, char *username)
     }
 }
 
-void check_signed_in(Account *account, char *username)
+int check_signed_in(Account *account, char *username)
 {
     Account *cur = account;
     while (cur != NULL)
     {
         if (strcmp(cur->username, username) == 0)
         {
-            if (cur->is_signed_in == 0)
-            {
-                printf("This account is not signed in! \n");
-            }
-            else
-            {
-                printf("Sign out is sucessful! \n");
-                cur->is_signed_in = 0;
-            }
-            return;
+            return cur->is_signed_in;
         }
         cur = cur->next;
     }
@@ -187,11 +178,11 @@ void sign_in(Account *acc)
     }
     else
     {
-        if (check_blocked(acc, username) == 0)
+        if (check_status(acc, username) == 0)
         {
             printf("Account is blocked, you can't access this account !\n");
             return;
-        }   
+        }
         else
         {
             while (n > 0)
@@ -206,6 +197,15 @@ void sign_in(Account *acc)
                 else
                 {
                     printf("Hello %s, sign in is successful!\n", username);
+                    Account *cur = acc;
+                    while (cur != NULL)
+                    {
+                        if (strcmp(cur->username, username) == 0)
+                        {
+                            cur->is_signed_in = 1;
+                        }
+                        cur = cur->next;
+                    }
                     return;
                 }
             }
@@ -230,22 +230,34 @@ void search(Account *acc)
     printf("----Welcome to search function.----\n");
     char username[30];
 
-    printf("Input your Username: ");
+    printf("Input username: ");
     scanf("%s", username);
     if (check_user(acc, username) != 0)
     {
         printf("Account does not exist!\n");
+        return;
     }
-    else
+
+    if (check_signed_in(acc, username) == 0)
     {
-        if (check_blocked(acc, username) == 0)
-        {
-            printf("Account is blocked!\n");
-        }
-        else
-        {
-            printf("Account is active!\n");
-        }
+        printf("Yet signed in.\n");
+        return;
+    }
+
+    switch (check_status(acc, username))
+    {
+    case 0:
+        printf("Account is blocked!\n");
+        break;
+    case 1:
+        printf("Account is activated!\n");
+        break;
+    case 2:
+        printf("Account is idle!\n");
+        break;
+    default:
+        printf("Something wrong!!!");
+        break;
     }
     return;
 }
@@ -279,7 +291,7 @@ void free_list(Account *head)
     }
 }
 
-int check_activate_code(char* activate_code, char* correct_activate_code)
+int check_activate_code(char *activate_code, char *correct_activate_code)
 {
     return strcmp(activate_code, correct_activate_code) == 0;
 }
