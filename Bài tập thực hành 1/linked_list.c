@@ -272,10 +272,25 @@ void sign_out(Account *acc)
     if (check_user(acc, username) != 0)
     {
         printf("Account does not exist!\n");
+        return;
     }
-    else
+
+    if (check_signed_in(acc, username) == 0)
     {
-        check_signed_in(acc, username);
+        printf("Yet signed in.\n");
+        return;
+    }
+
+    Account *cur = acc;
+    while (cur != NULL)
+    {
+        if (strcmp(cur->username, username) == 0)
+        {
+            cur->is_signed_in = 0;
+            printf("Sign out Successfully.\n");
+            return;
+        }
+        cur = cur->next;
     }
 }
 
