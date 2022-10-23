@@ -23,24 +23,18 @@ Account *add_account(Account *account, char *username, char *password, int statu
         Account *temp = create_new_account(username, password, status);
         return temp;
     }
-    else
+    if (check_user(account, username))
     {
-        if (check_user(account, username))
+        Account *cur = account;
+        while (cur->next != NULL)
         {
-            Account *cur = account;
-            while (cur->next != NULL)
-            {
-                cur = cur->next;
-            }
-            Account *temp = create_new_account(username, password, status);
-            cur->next = temp;
-            return account;
+            cur = cur->next;
         }
-        else
-        {
-            return NULL;
-        }
+        Account *temp = create_new_account(username, password, status);
+        cur->next = temp;
+        return account;
     }
+    return NULL;
 }
 
 int check_user(Account *account, char *username)
@@ -114,7 +108,7 @@ Account *read_account(Account *acc)
     {
         if (fscanf(inp, "%s %s %d", username, password, &status) > 0)
         {
-            acc = add_account(acc, username, password, status);
+            acc = add_acount(acc, username, password, status);
             number_of_account++;
         }
         else
