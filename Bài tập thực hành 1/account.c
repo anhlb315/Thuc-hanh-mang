@@ -164,58 +164,54 @@ void sign_in(Account *acc)
     int n = 3;
     printf("Input your Username: ");
     scanf("%s", username);
+    
     if (check_user(acc, username) != 0)
     {
         printf("Cannot find account \n");
         return;
     }
-    else
+    if (check_status(acc, username) == 0)
     {
-        if (check_status(acc, username) == 0)
+        printf("Account is blocked, you can't access this account !\n");
+        return;
+    }
+
+    while (n > 0)
+    {
+        printf("Input your Password: ");
+        scanf("%s", password);
+        if (check_password(acc, password) != 0)
         {
-            printf("Account is blocked, you can't access this account !\n");
-            return;
+            printf("Password is incorrect!\n");
+            n--;
         }
         else
         {
-            while (n > 0)
-            {
-                printf("Input your Password: ");
-                scanf("%s", password);
-                if (check_password(acc, password) != 0)
-                {
-                    printf("Password is incorrect!\n");
-                    n--;
-                }
-                else
-                {
-                    printf("Hello %s, sign in is successful!\n", username);
-                    Account *cur = acc;
-                    while (cur != NULL)
-                    {
-                        if (strcmp(cur->username, username) == 0)
-                        {
-                            cur->is_signed_in = 1;
-                        }
-                        cur = cur->next;
-                    }
-                    return;
-                }
-            }
-            printf("This account is blocked!\n");
+            printf("Hello %s, sign in is successful!\n", username);
             Account *cur = acc;
             while (cur != NULL)
             {
                 if (strcmp(cur->username, username) == 0)
                 {
-                    cur->status = 0;
+                    cur->is_signed_in = 1;
                 }
                 cur = cur->next;
             }
-            update_file(acc);
             return;
         }
     }
+    printf("This account is blocked!\n");
+    Account *cur = acc;
+    while (cur != NULL)
+    {
+        if (strcmp(cur->username, username) == 0)
+        {
+            cur->status = 0;
+        }
+        cur = cur->next;
+    }
+    update_file(acc);
+    return;
 }
 
 void search(Account *acc)
