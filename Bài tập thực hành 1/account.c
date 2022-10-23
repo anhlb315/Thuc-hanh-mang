@@ -127,20 +127,18 @@ Account *register_account(Account *acc)
     printf("Input your Username: ");
     scanf("%s", username);
     fflush(stdin);
-    if (check_user(acc, username) != 0)
-    {
-        printf("Input your Password: ");
-        scanf("%s", password);
-        fflush(stdin);
-        acc = add_account(acc, username, password, 2);
-        number_of_account++;
-        printf("Successful registration. \n");
-        update_file(acc);
-    }
-    else
+    if (check_user(acc, username) == 0)
     {
         printf("This account existed! \n");
     }
+    
+    printf("Input your Password: ");
+    scanf("%s", password);
+    fflush(stdin);
+    acc = add_account(acc, username, password, 2);
+    number_of_account++;
+    printf("Successful registration. \n");
+    update_file(acc);
     return acc;
 }
 
