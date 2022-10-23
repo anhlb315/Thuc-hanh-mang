@@ -317,45 +317,43 @@ void activate(Account *acc)
     if (check_user(acc, username) != 0)
     {
         printf("Account does not exist!\n");
+        return;
     }
-    else
+
+    printf("Input your Password: ");
+    scanf("%s", password);
+    if (check_password(acc, password) != 0)
     {
-        printf("Input your Password: ");
-        scanf("%s", password);
-        if (check_password(acc, password) != 0)
+        printf("Password is incorrect!\n");
+        return;
+    }
+
+    int time = 4;
+    do
+    {
+        printf("Enter your activate code: ");
+        scanf("%s", activate_code);
+        if (check_activate_code(activate_code, correct_activate_code) == 0)
         {
-            printf("Password is incorrect!\n");
+            printf("Activate Code is not correct, enter again.\n");
+            time--;
         }
         else
         {
-            int time = 4;
-            do
-            {
-                printf("Enter your activate code: ");
-                scanf("%s", activate_code);
-                if (check_activate_code(activate_code, correct_activate_code) != 0)
-                {
-                    printf("Activate Code is not correct, enter again.\n");
-                    time--;
-                }
-                else
-                {
-                    break;
-                }
-            } while (time != 0);
-            Account *cur = acc;
-            while (cur != NULL)
-            {
-                if (strcmp(cur->username, username) == 0)
-                {
-                    cur->status = 1;
-                    printf("Change to activate successfully.");
-                }
-                cur = cur->next;
-            }
-            update_file(acc);
+            break;
         }
+    } while (time != 0);
+    Account *cur = acc;
+    while (cur != NULL)
+    {
+        if (strcmp(cur->username, username) == 0)
+        {
+            cur->status = 1;
+            printf("Change to activate successfully.");
+        }
+        cur = cur->next;
     }
+    update_file(acc);
     return;
 }
 
