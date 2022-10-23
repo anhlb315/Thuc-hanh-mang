@@ -39,6 +39,7 @@ int main() {
             break;
         default:
             free_list(acc);
+            printf("Exit program...\n");
             exit(0);
         }
     }

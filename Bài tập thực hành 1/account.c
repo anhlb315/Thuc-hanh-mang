@@ -108,7 +108,7 @@ Account *read_account(Account *acc)
     {
         if (fscanf(inp, "%s %s %d", username, password, &status) > 0)
         {
-            acc = add_acount(acc, username, password, status);
+            acc = add_account(acc, username, password, status);
             number_of_account++;
         }
         else
