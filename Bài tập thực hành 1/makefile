@@ -1,14 +1,14 @@
 CC = gcc
 CFLAGS  = -o
 
-main: main.o linked_list.o
-	$(CC) $(CFLAGS) main main.o linked_list.o
+main: main.o account.o
+	$(CC) $(CFLAGS) main main.o account.o
 
 main.o: main.c
 	$(CC) -c main.c
 
-linked_list.o: linked_list.c
-	$(CC) -c linked_list.c
+account.o: account.c
+	$(CC) -c account.c
 
 clean:
 	$(RM) main *.o *~
