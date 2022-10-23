@@ -130,8 +130,9 @@ Account *register_account(Account *acc)
     if (check_user(acc, username) == 0)
     {
         printf("This account existed! \n");
+        return acc;
     }
-    
+
     printf("Input your Password: ");
     scanf("%s", password);
     fflush(stdin);
