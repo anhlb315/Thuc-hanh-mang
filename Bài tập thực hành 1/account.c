@@ -164,7 +164,7 @@ void sign_in(Account *acc)
     int n = 3;
     printf("Input your Username: ");
     scanf("%s", username);
-    
+
     if (check_user(acc, username) != 0)
     {
         printf("Cannot find account \n");
@@ -297,7 +297,7 @@ void free_list(Account *head)
 
 int check_activate_code(char *activate_code, char *correct_activate_code)
 {
-    return strcmp(activate_code, correct_activate_code) == 0;
+    return strcmp(activate_code, correct_activate_code);
 }
 
 void activate(Account *acc)
@@ -331,25 +331,26 @@ void activate(Account *acc)
         scanf("%s", activate_code);
         if (check_activate_code(activate_code, correct_activate_code) == 0)
         {
-            printf("Activate Code is not correct, enter again.\n");
+            printf("Activate Code is not correct, enter again (%d times left).\n", time - 1);
             time--;
         }
         else
         {
-            break;
+            Account *cur = acc;
+            while (cur != NULL)
+            {
+                if (strcmp(cur->username, username) == 0)
+                {
+                    cur->status = 1;
+                    printf("Change to activate successfully.\n");
+                }
+                cur = cur->next;
+            }
+            update_file(acc);
+            return;
         }
     } while (time != 0);
-    Account *cur = acc;
-    while (cur != NULL)
-    {
-        if (strcmp(cur->username, username) == 0)
-        {
-            cur->status = 1;
-            printf("Change to activate successfully.");
-        }
-        cur = cur->next;
-    }
-    update_file(acc);
+    printf("Change to activate failed.\n");
     return;
 }
 
@@ -365,6 +366,11 @@ void change_password(Account *acc)
     if (check_user(acc, username) != 0)
     {
         printf("Account does not exist!\n");
+        return;
+    }
+
+    if(check_signed_in(acc, username) == 0) {
+        printf("Yet signed in.\n");
         return;
     }
 
