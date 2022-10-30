@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "account.h"
+#include "resolver.h"
 
 int main() {
     int menu;
