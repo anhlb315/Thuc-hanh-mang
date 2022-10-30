@@ -8,4 +8,4 @@ resolver.o: resolver.c
 	$(CC) -c resolver.c
 
 clean:
-	$(RM) main *.o *~
+	$(RM) resolver *.o *~
