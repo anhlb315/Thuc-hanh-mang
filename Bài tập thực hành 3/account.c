@@ -5,22 +5,23 @@
 
 int number_of_account;
 
-Account *create_new_account(char *username, char *password, int status)
+Account *create_new_account(char *username, char *password, char *homepage, int status)
 {
     Account *p = (Account *)malloc(sizeof(struct _Account));
     strcpy(p->username, username);
     strcpy(p->password, password);
+    strcpy(p->homepage, homepage);
     p->status = status;
     p->is_signed_in = 0;
     p->next = NULL;
     return p;
 }
 
-Account *add_account(Account *account, char *username, char *password, int status)
+Account *add_account(Account *account, char *username, char *password, char *homepage, int status)
 {
     if (account == NULL)
     {
-        Account *temp = create_new_account(username, password, status);
+        Account *temp = create_new_account(username, password, homepage, status);
         return temp;
     }
     if (check_user(account, username))
@@ -30,7 +31,7 @@ Account *add_account(Account *account, char *username, char *password, int statu
         {
             cur = cur->next;
         }
-        Account *temp = create_new_account(username, password, status);
+        Account *temp = create_new_account(username, password, homepage, status);
         cur->next = temp;
         return account;
     }
@@ -95,6 +96,7 @@ Account *read_account(Account *acc)
 {
     char username[30];
     char password[30];
+    char homepage[100];
     int status;
     number_of_account = 0;
     FILE *inp = fopen("nguoidung.txt", "r");
@@ -106,9 +108,9 @@ Account *read_account(Account *acc)
 
     do
     {
-        if (fscanf(inp, "%s %s %d", username, password, &status) > 0)
+        if (fscanf(inp, "%s %s %d %s", username, password, &status, homepage) > 0)
         {
-            acc = add_account(acc, username, password, status);
+            acc = add_account(acc, username, password, homepage, status);
             number_of_account++;
         }
         else
@@ -124,6 +126,7 @@ Account *register_account(Account *acc)
 
     char username[30];
     char password[30];
+    char homepage[100];
     printf("Input your Username: ");
     scanf("%s", username);
     fflush(stdin);
@@ -136,7 +139,10 @@ Account *register_account(Account *acc)
     printf("Input your Password: ");
     scanf("%s", password);
     fflush(stdin);
-    acc = add_account(acc, username, password, 2);
+    printf("Input your Homepage: ");
+    scanf("%s", homepage);
+    fflush(stdin);
+    acc = add_account(acc, username, password, homepage, 2);
     number_of_account++;
     printf("Successful registration. \n");
     update_file(acc);
@@ -149,7 +155,7 @@ void update_file(Account *acc)
     Account *cur = acc;
     while (cur != NULL)
     {
-        fprintf(inp, "%s %s %d\n", cur->username, cur->password, cur->status);
+        fprintf(inp, "%s %s %d %s\n", cur->username, cur->password, cur->status, cur->homepage);
         cur = cur->next;
     }
     fclose(inp);

@@ -1,13 +1,14 @@
 typedef struct _Account {
     char username[30];
     char password[30];
+    char homepage[100];
     int status;
     int is_signed_in;
     struct _Account *next;
 } Account;
 
-Account *create_new_account(char *username, char *password, int status);
-Account *add_account(Account *account, char *username, char *password, int status);
+Account *create_new_account(char *username, char *password, char *homepage, int status);
+Account *add_account(Account *account, char *username, char *password, char *homepage, int status);
 int check_user(Account *account, char *username);
 int check_password(Account *account, char *password);
 int check_blocked(Account *account, char *username);

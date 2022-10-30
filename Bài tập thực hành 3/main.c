@@ -17,7 +17,7 @@ int main() {
         printf("5. Change Password\n");
         printf("6. Sign Out\n");
         printf("7. Homepage with domain name\n");
-        printf("6. Homepage with IP address\n");
+        printf("8. Homepage with IP address\n");
         printf("Your choice (1-8, other to quit):\n");
         scanf("%d", &menu); fflush(stdin);
         switch (menu) {
