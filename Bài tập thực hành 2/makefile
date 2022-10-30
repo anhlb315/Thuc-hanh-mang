@@ -6,3 +6,6 @@ main: resolver.o
 
 resolver.o: resolver.c
 	$(CC) -c resolver.c
+
+clean:
+	$(RM) main *.o *~
