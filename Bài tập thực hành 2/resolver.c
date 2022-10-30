@@ -5,50 +5,61 @@
 #include <sys/socket.h>
 #include <string.h>
 #include <netdb.h>
+#include <ctype.h>
 
 struct hostent *host_info;
 struct in_addr *address;
 
-int is_valid_ip_address(char *ipAddress)
-{
-    struct sockaddr_in sa;
-    int result = inet_pton(AF_INET, ipAddress, &(sa.sin_addr));
-    return result != 0;
+int check(int option, char input[30]){
+    if (option == 1) return isdigit(input[0]);
+    else return isalpha(input[1]);
 }
 
 int main(int argc, char **argv)
 {
     if (argc != 3)
     {
-        printf("Parameters Error\n");
+        printf("Wrong parameter\n");
         return 0;
     }
 
     int argv_1 = atoi(argv[1]);
     switch (argv_1)
     {
-    case 1:
-        printf("Will do a DNS query on: %s\n", argv[2]);
-        host_info = gethostbyname(argv[2]);
-        address = (struct in_addr *)(host_info->h_addr);
-        printf("%s has address %s\n", argv[2], inet_ntoa(*address));
-        break;
     case 2:
-        if (!is_valid_ip_address(argv[2]))
-        {
-            printf("%s is not valid\n", argv[2]);
+        if (!check(2, argv[2])){
+            printf("Wrong parameter\n");
             return 0;
         }
 
-        struct sockaddr_storage addr;
-        socklen_t addr_len = sizeof(addr);
-        char buffer[NI_MAXHOST];
-        int err = getnameinfo((struct sockaddr *)&addr, addr_len, argv[2], 1024, 0, 0, 0);
-        if (err != 0)
-        {
-            printf("failed to convert address to string (code=%d)\n", err);
+        host_info = gethostbyname(argv[2]);
+        address = (struct in_addr *)(host_info->h_addr);
+        printf("Official IP: %s\n", inet_ntoa(*address));
+        break;
+    case 1:
+        if (!check(1, argv[2])){
+            printf("Wrong parameter\n");
+            return 0;
         }
-        printf("Remote address: %s\n", argv[2]);
+
+        struct sockaddr_in sa;
+        socklen_t len;
+        char hbuf[NI_MAXHOST];
+
+        memset(&sa, 0, sizeof(struct sockaddr_in));
+
+        sa.sin_family = AF_INET;
+        sa.sin_addr.s_addr = inet_addr(argv[2]);
+        len = sizeof(struct sockaddr_in);
+
+        if (getnameinfo((struct sockaddr *)&sa, len, hbuf, sizeof(hbuf), NULL, 0, NI_NAMEREQD))
+        {
+            printf("Not found information\n");
+        }
+        else
+        {
+            printf("Official name: %s\n", hbuf);
+        }
         break;
     default:
         printf("Paraemters Error\n");
