@@ -16,7 +16,9 @@ int main() {
         printf("4. Search\n");
         printf("5. Change Password\n");
         printf("6. Sign Out\n");
-        printf("Your choice (1-6, other to quit):\n");
+        printf("7. Homepage with domain name\n");
+        printf("6. Homepage with IP address\n");
+        printf("Your choice (1-8, other to quit):\n");
         scanf("%d", &menu); fflush(stdin);
         switch (menu) {
         case 1:
@@ -36,6 +38,12 @@ int main() {
             break;
         case 6:
             sign_out(acc);
+            break;
+        case 7:
+            print_domain_name(acc);
+            break;
+        case 8:
+            print_ip_address(acc);
             break;
         default:
             free_list(acc);
