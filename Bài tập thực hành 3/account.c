@@ -312,7 +312,7 @@ void activate(Account *acc)
     char username[30];
     char password[30];
     char activate_code[30];
-    char correct_activate_code[30] = "20194616\n";
+    char correct_activate_code[30] = "20194616";
 
     printf("Input your Username: ");
     scanf("%s", username);
