@@ -181,6 +181,11 @@ void sign_in(Account *acc)
         printf("Account is blocked, you can't access this account !\n");
         return;
     }
+    if (check_status(acc, username) == 2)
+    {
+        printf("Account is idle, you can't access this account !\n");
+        return;
+    }
 
     while (n > 0)
     {
