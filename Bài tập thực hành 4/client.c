@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
     // Clear server_address
     bzero(&server_address, sizeof(server_address));
     server_address.sin_addr.s_addr = inet_addr(ip_address);
-    server_address.sin_port = htops(port);
+    server_address.sin_port = htons(port);
     server_address.sin_family = AF_INET;
 
     // Create datagram socket
@@ -55,10 +55,10 @@ int main(int argc, char* argv[])
         // Request to send datagram ???
         // No need to specify server address in sendto
         // Connect stores the peers IP and port
-        sento(sockfd, message, MAXLINE, 0, (struct sockaddr*)&server_address, sizeof(server_address));
+        sendto(sockfd, message, MAXLINE, 0, (struct sockaddr*)&server_address, sizeof(server_address));
 
         // Waiting for response
-        recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct scokaddr*)NULL, NULL);
+        recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr*)NULL, NULL);
         puts(buffer);
         recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr*)NULL, NULL);
         puts(buffer);
