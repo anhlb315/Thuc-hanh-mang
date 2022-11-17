@@ -7,7 +7,6 @@
 #include <netdb.h>
 #include <ctype.h>
 
-
 int check(int option, char input[30]){
     if (option == 1) return isdigit(input[0]);
     else return isalpha(input[1]);
@@ -30,6 +29,9 @@ int main(int argc, char **argv)
             return 0;
         }
 
+        struct hostent *host_info;
+        struct in_addr *address;
+
         host_info = gethostbyname(argv[2]);
         address = (struct in_addr *)(host_info->h_addr);
         printf("Official IP: %s\n", inet_ntoa(*address));
@@ -41,16 +43,14 @@ int main(int argc, char **argv)
         }
 
         struct sockaddr_in sa;
-        socklen_t len;
         char hbuf[NI_MAXHOST];
 
         memset(&sa, 0, sizeof(struct sockaddr_in));
 
         sa.sin_family = AF_INET;
         sa.sin_addr.s_addr = inet_addr(argv[2]);
-        len = sizeof(struct sockaddr_in);
 
-        if (getnameinfo((struct sockaddr *)&sa, len, hbuf, sizeof(hbuf), NULL, 0, NI_NAMEREQD))
+        if (getnameinfo((struct sockaddr *)&sa, sizeof(struct sockaddr_in), hbuf, sizeof(hbuf), NULL, 0, NI_NAMEREQD))
         {
             printf("Not found information\n");
         }
