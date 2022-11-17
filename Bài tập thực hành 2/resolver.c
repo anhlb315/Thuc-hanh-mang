@@ -7,8 +7,6 @@
 #include <netdb.h>
 #include <ctype.h>
 
-struct hostent *host_info;
-struct in_addr *address;
 
 int check(int option, char input[30]){
     if (option == 1) return isdigit(input[0]);
