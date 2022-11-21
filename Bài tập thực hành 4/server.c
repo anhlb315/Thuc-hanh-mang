@@ -8,6 +8,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include "exception/exception.h"
 #define MAXLINE 1000 
 
 int split(char* buffer, char* only_number, char* only_string)
@@ -76,11 +77,16 @@ int main(int argc, char* argv[])
     // Split data to only string and only number
     if (split(buffer, only_number, only_string) == 1)
     {
-        //puts("Success");
+        printf("Buffer: ");
+        puts(buffer);
+        printf("Only Number: ");
+        puts(only_number);
+        printf("Only String: ");
+        puts(only_string);
     }
     else
     {
-        //puts("Error");
+        puts("Error");
         strcpy(only_number, "Error");
         strcpy(only_string, "");
     }

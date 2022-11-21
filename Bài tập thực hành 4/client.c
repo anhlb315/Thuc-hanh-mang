@@ -7,8 +7,9 @@
 #include <unistd.h> 
 #include <stdlib.h> 
 #include <string.h>
-#include <strings.h> 
-#define MAXLINE 1000 
+#include <strings.h>
+#include "exception/exception.h"
+#define MAXLINE 1000
 
 int main(int argc, char* argv[])
 {
