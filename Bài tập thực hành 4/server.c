@@ -114,8 +114,17 @@ int main(int argc, char *argv[])
             n = recvfrom(listenfd, is_password_changing, sizeof(is_password_changing), 0, (struct sockaddr *)&client_address, &len); // Receive from client
             standardize_input(is_password_changing, n);
 
-            if(strlen(is_password_changing) > 1) {
-                if(change_password(acc, username_buffer, is_password_changing)) {
+            char bye[100] = "bye\0";
+            if (strcmp(bye, is_password_changing) == 0)
+            {
+                if(sign_out(acc, username_buffer)) {
+                    sendto(listenfd, bye, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
+                }
+            }
+            else if (strlen(is_password_changing) > 1)
+            {
+                if (change_password(acc, username_buffer, is_password_changing))
+                {
                     sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
                 }
             }

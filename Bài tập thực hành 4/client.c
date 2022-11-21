@@ -103,12 +103,13 @@ int main(int argc, char *argv[])
 
             printf("OK.\n");
             printf("------------------\n");
-            printf("Do you want to change password?(y/n): ");
         goal1:
+            printf("Do you want to change password or sign out?(y/n/bye): ");
             if (fgets(choice, sizeof(choice), stdin) == NULL)
                 break;
 
-            if (choice[0] != 121 && choice[1] != 110)
+            char bye[100] = "bye\n\0";
+            if (choice[0] != 121 && choice[0] != 110 && !(strcmp(choice, bye) == 0))
             {
                 printf("Wrong input. Only y or n.\n");
                 goto goal1;
@@ -148,10 +149,20 @@ int main(int argc, char *argv[])
                     printf("Change password successfully.\n");
                 }
             }
-            else
+            else if (choice[0] == 110)
             {
                 char request[2] = "0";
                 sendto(sockfd, request, MAXLINE, 0, (struct sockaddr *)&server_address, sizeof(server_address));
+            }
+            else
+            {
+                char sign_out_request[100] = "bye\0";
+                sendto(sockfd, sign_out_request, MAXLINE, 0, (struct sockaddr *)&server_address, sizeof(server_address));
+                recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)NULL, NULL);
+                if (strcmp(sign_out_request, buffer)==0)
+                {
+                    printf("Sign out successfully.\n");
+                }
             }
             break;
         case 1:

@@ -234,23 +234,18 @@ void search(Account *acc)
     return;
 }
 
-void sign_out(Account *acc)
+int sign_out(Account *acc, char* username)
 {
-    printf("----Welcome to Sign Out function.----\n");
-    char username[30];
-
-    printf("Input your Username: ");
-    scanf("%s", username);
     if (check_user(acc, username) != 0)
     {
         printf("Account does not exist!\n");
-        return;
+        return 0;
     }
 
     if (check_signed_in(acc, username) == 0)
     {
         printf("Yet signed in.\n");
-        return;
+        return 0;
     }
 
     Account *cur = acc;
@@ -259,11 +254,11 @@ void sign_out(Account *acc)
         if (strcmp(cur->username, username) == 0)
         {
             cur->is_signed_in = 0;
-            printf("Sign out Successfully.\n");
-            return;
+            return 1;
         }
         cur = cur->next;
     }
+    return 0;
 }
 
 void free_list(Account *head)
