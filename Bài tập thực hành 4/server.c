@@ -78,13 +78,13 @@ int main(int argc, char *argv[])
     { // Receive the datagram
         len = sizeof(client_address);
         int n = recvfrom(listenfd, username_buffer, sizeof(username_buffer), 0, (struct sockaddr *)&client_address, &len); // Receive username from server
-        username_buffer[n] = '\0';
+        standardize_input(username_buffer, n);
         n = recvfrom(listenfd, password_buffer, sizeof(password_buffer), 0, (struct sockaddr *)&client_address, &len); // Receive password from server
-        password_buffer[n] = '\0';
+        standardize_input(password_buffer, n);
         // Note that these buffers have "\n" at the end
 
-        printf("Username: %s", username_buffer);
-        printf("Password: %s", password_buffer);
+        printf("Username: %s\n", username_buffer);
+        printf("Password: %s\n", password_buffer);
         printf("-----------------\n");
 
         //---------------Account---------------------------------------------
