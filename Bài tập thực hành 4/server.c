@@ -80,11 +80,11 @@ int main(int argc, char *argv[])
         username_buffer[n] = '\0';
         n = recvfrom(listenfd, password_buffer, sizeof(password_buffer), 0, (struct sockaddr *)&client_address, &len); // Receive password from server
         password_buffer[n] = '\0';
+        // Note that these buffers have "\n" at the end
 
-        printf("Username: ");
-        puts(username_buffer);
-        printf("Password: ");
-        puts(password_buffer);
+        printf("Username: %s", username_buffer);
+        printf("Password: %s", password_buffer);
+        printf("-----------------\n");
 
         // Sent the response to client
         sendto(listenfd, username_buffer, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
