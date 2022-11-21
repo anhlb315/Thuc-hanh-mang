@@ -8,7 +8,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include "exception/exception.h"
+#include "exception.h"
 #define MAXLINE 1000 
 
 int split(char* buffer, char* only_number, char* only_string)

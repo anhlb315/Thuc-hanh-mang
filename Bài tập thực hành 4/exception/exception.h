@@ -1,1 +1,0 @@
-void remove_spaces(char* s);
