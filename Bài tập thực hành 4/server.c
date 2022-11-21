@@ -116,6 +116,7 @@ int main(int argc, char *argv[])
             if(password_incorrect_times <= 0) {
                 change_current_account_status(acc, username_buffer, 2);
                 strcat(sign_in_feedback, " Account is blocked.");
+                password_incorrect_times = 3;
             }
             sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
             memset(sign_in_feedback, 0, sizeof(sign_in_feedback));
