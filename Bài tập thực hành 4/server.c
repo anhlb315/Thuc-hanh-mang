@@ -92,41 +92,22 @@ int main(int argc, char *argv[])
         char sign_in_feedback[100];
         Account *acc = NULL;
         acc = read_account(acc);
+
         // Sign in
-        switch (sign_in(acc, username_buffer, password_buffer))
+        int feedback = sign_in(acc, username_buffer, password_buffer);
+        if (feedback == 3) // If wrong password
         {
-        case 0:
-            strcat(sign_in_feedback, "OK.");
-            sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
-            memset(sign_in_feedback, 0, sizeof(sign_in_feedback));
-            break;
-        case 1:
-            strcat(sign_in_feedback, "Cannot find account.");
-            sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));\
-            memset(sign_in_feedback, 0, sizeof(sign_in_feedback));
-            break;
-        case 2:
-            strcat(sign_in_feedback, "Account is not ready.");
-            sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
-            memset(sign_in_feedback, 0, sizeof(sign_in_feedback));
-            break;
-        case 3:
-            strcat(sign_in_feedback, "Not OK.");
             password_incorrect_times--;
-            if(password_incorrect_times <= 0) {
+            if (password_incorrect_times == 0)
+            {
                 change_current_account_status(acc, username_buffer, 2);
-                strcat(sign_in_feedback, " Account is blocked.");
-                password_incorrect_times = 3;
+                feedback++; // 4 mean account is blocked
             }
-            sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
-            memset(sign_in_feedback, 0, sizeof(sign_in_feedback));
-            break;
-        default:
-            strcat(sign_in_feedback, "Undefined Error.");
-            sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
-            memset(sign_in_feedback, 0, sizeof(sign_in_feedback));
-            break;
         }
+
+        sprintf(sign_in_feedback, "%d", feedback);
+        sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
+
         //-------------------------------------------------------------------
     } while (1);
 }

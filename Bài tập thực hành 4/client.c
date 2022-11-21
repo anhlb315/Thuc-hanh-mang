@@ -4,14 +4,15 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <unistd.h> 
-#include <stdlib.h> 
+#include <unistd.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <ctype.h>
 #include "exception/exception.h"
 #define MAXLINE 1000
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     // Check input
     if (argc != 3)
@@ -20,8 +21,8 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    char* ip_address = argv[1]; // Get IP from argv
-    char* port_number = argv[2]; // Get Port number from argv
+    char *ip_address = argv[1];   // Get IP from argv
+    char *port_number = argv[2];  // Get Port number from argv
     int port = atoi(port_number); // int-type Port number
 
     struct sockaddr_in server_address;
@@ -30,51 +31,59 @@ int main(int argc, char* argv[])
     bzero(&server_address, sizeof(server_address));
     server_address.sin_addr.s_addr = inet_addr(ip_address);
     server_address.sin_port = htons(port);
-    server_address.sin_family = AF_INET;int n; // ???
+    server_address.sin_family = AF_INET;
+    int n; // ???
 
     // Create datagram socket
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
     // Connect to server
-    if(connect(sockfd, (struct sockaddr*)&server_address, sizeof(server_address)) < 0)
+    if (connect(sockfd, (struct sockaddr *)&server_address, sizeof(server_address)) < 0)
     {
         printf("\nError: Connect failed.\n");
         exit(0);
     }
 
-    do {
+    do
+    {
         char buffer[100];
         char username[100];
         char password[100];
 
+    goal0:
         // Get username & password
-        goal0: 
         printf("Username: ");
-        if (fgets(username, sizeof(username), stdin) == NULL) break;
+        if (fgets(username, sizeof(username), stdin) == NULL)
+            break;
 
         // Check for '\n' input
-        if(strcmp(username, "\n") == 0) {
+        if (strcmp(username, "\n") == 0)
+        {
             printf("Username is empty.\n\n");
             goto goal0;
         }
 
         // Check for scape
-        if(check_spaces(username, strlen(username))) {
+        if (check_spaces(username, strlen(username)))
+        {
             printf("Username contains white space. Please enter again.\n\n");
             goto goal0;
         }
 
         printf("Password: ");
-        if (fgets(password, sizeof(password), stdin) == NULL) break;
+        if (fgets(password, sizeof(password), stdin) == NULL)
+            break;
 
         // Check for '\n' input
-        if(strcmp(password, "\n") == 0) {
+        if (strcmp(password, "\n") == 0)
+        {
             printf("Password is empty.\n\n");
             goto goal0;
         }
 
         // Check for scape
-        if(check_spaces(password, strlen(password))) {
+        if (check_spaces(password, strlen(password)))
+        {
             printf("Password contains white space. Please enter again.\n\n");
             goto goal0;
         }
@@ -82,14 +91,33 @@ int main(int argc, char* argv[])
         // Request to send datagram ???
         // No need to specify server address in sendto
         // Connect stores the peers IP and port
-        sendto(sockfd, username, MAXLINE, 0, (struct sockaddr*)&server_address, sizeof(server_address));
-        sendto(sockfd, password, MAXLINE, 0, (struct sockaddr*)&server_address, sizeof(server_address));
+        sendto(sockfd, username, MAXLINE, 0, (struct sockaddr *)&server_address, sizeof(server_address));
+        sendto(sockfd, password, MAXLINE, 0, (struct sockaddr *)&server_address, sizeof(server_address));
 
         // Waiting for response
-        recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr*)NULL, NULL);
-        printf("Server's feedback: %s\n", buffer);
+        recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)NULL, NULL);
+        switch (atoi(buffer))
+        {
+        case 0:
+            printf("OK.\n");
+            break;
+        case 1:
+            printf("Cannot find account.\n");
+            break;
+        case 2:
+            printf("Account is not ready.\n");
+            break;
+        case 3:
+            printf("Not OK.\n");
+            break;
+        case 4:
+            printf("Not OK. Account is blocked.\n");
+            break;
+        default:
+            break;
+        }
         printf("------------------\n");
-    } while(1);
+    } while (1);
 
     // Close the descriptor
     close(sockfd);
