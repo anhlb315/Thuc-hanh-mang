@@ -80,6 +80,11 @@ int main(int argc, char *argv[])
         len = sizeof(client_address);
         int n = recvfrom(listenfd, username_buffer, sizeof(username_buffer), 0, (struct sockaddr *)&client_address, &len); // Receive username from client
         standardize_input(username_buffer, n);
+
+        // Check for exit program
+        char exit_program[100] = "exit_program\0";
+        if (strcmp(exit_program, username_buffer) == 0) break;
+
         n = recvfrom(listenfd, password_buffer, sizeof(password_buffer), 0, (struct sockaddr *)&client_address, &len); // Receive password from client
         standardize_input(password_buffer, n);
         // Note that these buffers have "\n" at the end

@@ -56,13 +56,6 @@ int main(int argc, char *argv[])
         if (fgets(username, sizeof(username), stdin) == NULL)
             break;
 
-        // Check for '\n' input
-        if (strcmp(username, "\n") == 0)
-        {
-            printf("Username is empty.\n\n");
-            goto goal0;
-        }
-
         // Check for scape
         if (check_spaces(username, strlen(username)))
         {
@@ -75,10 +68,12 @@ int main(int argc, char *argv[])
             break;
 
         // Check for '\n' input
-        if (strcmp(password, "\n") == 0)
+        if (strcmp(username, "\n") == 0 && strcmp(password, "\n") == 0)
         {
-            printf("Password is empty.\n\n");
-            goto goal0;
+            printf("Exit Program.\n");
+            char exit_program[100] = "exit_program\0";
+            sendto(sockfd, exit_program, MAXLINE, 0, (struct sockaddr *)&server_address, sizeof(server_address));
+            break;
         }
 
         // Check for scape
