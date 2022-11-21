@@ -24,15 +24,32 @@ void standardize_input(char *buffer, int length)
     return;
 }
 
-int check_if_signed_in(char *buffer)
+int check_new_password(char *string)
 {
-    char ok[5] = "OK.";
-    printf("%s %s\n", buffer, ok);
-    printf("%d %d\n", strlen(buffer), strlen(ok));
-    printf("%d\n", strcmp(buffer, ok));
-    if (strcmp(buffer, ok) == 0)
+    for (int i = 0; i < strlen(string); i++)
     {
+        if (string[i] == 10) return 0;
+        if ((string[i] >= 0 && string[i] <= 47) || (string[i] >= 58 && string[i] <= 64) || (string[i] >= 91 && string[i] <= 96) || (string[i] >=123))
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int check_confirm_password(char *confirm_password, char *new_password)
+{
+    // Check for number and letter
+    if (check_new_password(confirm_password)) {
+        printf("Can only contains number or letter. Try again please.\n");
         return 1;
     }
+
+    // Check if the same password
+    if (strcmp(confirm_password, new_password) != 0) {
+        printf("Passwords not the same.\n");
+        return 1;
+    }
+
     return 0;
 }

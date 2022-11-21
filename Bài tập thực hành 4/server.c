@@ -78,9 +78,9 @@ int main(int argc, char *argv[])
     do
     { // Receive the datagram
         len = sizeof(client_address);
-        int n = recvfrom(listenfd, username_buffer, sizeof(username_buffer), 0, (struct sockaddr *)&client_address, &len); // Receive username from server
+        int n = recvfrom(listenfd, username_buffer, sizeof(username_buffer), 0, (struct sockaddr *)&client_address, &len); // Receive username from client
         standardize_input(username_buffer, n);
-        n = recvfrom(listenfd, password_buffer, sizeof(password_buffer), 0, (struct sockaddr *)&client_address, &len); // Receive password from server
+        n = recvfrom(listenfd, password_buffer, sizeof(password_buffer), 0, (struct sockaddr *)&client_address, &len); // Receive password from client
         standardize_input(password_buffer, n);
         // Note that these buffers have "\n" at the end
 
@@ -107,6 +107,19 @@ int main(int argc, char *argv[])
 
         sprintf(sign_in_feedback, "%d", feedback);
         sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
+
+        if (feedback == 0) // If signed in
+        {
+            char is_password_changing[10];
+            n = recvfrom(listenfd, is_password_changing, sizeof(is_password_changing), 0, (struct sockaddr *)&client_address, &len); // Receive from client
+            standardize_input(is_password_changing, n);
+
+            if(strlen(is_password_changing) > 1) {
+                if(change_password(acc, username_buffer, is_password_changing)) {
+                    sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
+                }
+            }
+        }
 
         //-------------------------------------------------------------------
     } while (1);

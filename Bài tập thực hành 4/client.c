@@ -99,7 +99,60 @@ int main(int argc, char *argv[])
         switch (atoi(buffer))
         {
         case 0:
+            char choice[100];
+
             printf("OK.\n");
+            printf("------------------\n");
+            printf("Do you want to change password?(y/n): ");
+        goal1:
+            if (fgets(choice, sizeof(choice), stdin) == NULL)
+                break;
+
+            if (choice[0] != 121 && choice[1] != 110)
+            {
+                printf("Wrong input. Only y or n.\n");
+                goto goal1;
+            }
+
+            if (choice[0] == 121)
+            {
+                char new_password[100];
+            goal2:
+                printf("New password: ");
+                if (fgets(new_password, sizeof(new_password), stdin) == NULL)
+                    break;
+
+                // Check new_password
+                if (check_new_password(new_password))
+                {
+                    printf("Can only contains number or letter. Try again please.\n");
+                    goto goal2;
+                }
+
+                char confirm_password[100];
+            goal3:
+                printf("Confirm password: ");
+                if (fgets(confirm_password, sizeof(confirm_password), stdin) == NULL)
+                    break;
+
+                // Check confirm_password
+                if (check_confirm_password(confirm_password, new_password))
+                {
+                    goto goal3;
+                }
+
+                sendto(sockfd, confirm_password, MAXLINE, 0, (struct sockaddr *)&server_address, sizeof(server_address));
+                recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)NULL, NULL);
+                if (atoi(buffer) == 0)
+                {
+                    printf("Change password successfully.\n");
+                }
+            }
+            else
+            {
+                char request[2] = "0";
+                sendto(sockfd, request, MAXLINE, 0, (struct sockaddr *)&server_address, sizeof(server_address));
+            }
             break;
         case 1:
             printf("Cannot find account.\n");

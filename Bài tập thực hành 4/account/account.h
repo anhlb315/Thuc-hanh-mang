@@ -21,5 +21,5 @@ void search(Account *account);
 void sign_out(Account *account);
 void free_list(Account *account);
 void activate(Account *account);
-void change_password(Account * account);
+int change_password(Account *acc, char* username, char* new_password);
 void change_current_account_status(Account* acc, char* username, int status);
