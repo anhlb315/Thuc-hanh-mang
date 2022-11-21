@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
     char* port_number = argv[2]; // Get Port number from argv
     int port = atoi(port_number); // int-type Port number
 
-    int sockfd, n; // ???
+    int n; // ???
     struct sockaddr_in server_address;
 
     // Clear server_address
@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
     server_address.sin_family = AF_INET;
 
     // Create datagram socket
-    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
     // Connect to server
     if(connect(sockfd, (struct sockaddr*)&server_address, sizeof(server_address)) < 0)
