@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    int password_incorrect_times = 3; // Counting enter wrong password time
     char *port_number = argv[1];
     int port = atoi(port_number); // Get port from argv
     char username_buffer[100];    // Data username from client
@@ -89,7 +90,6 @@ int main(int argc, char *argv[])
 
         //---------------Account---------------------------------------------
         char sign_in_feedback[100];
-        int password_incorrect_times = 3;
         Account *acc = NULL;
         acc = read_account(acc);
         // Sign in
@@ -98,26 +98,32 @@ int main(int argc, char *argv[])
         case 0:
             strcat(sign_in_feedback, "OK.");
             sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
+            memset(sign_in_feedback, 0, sizeof(sign_in_feedback));
             break;
         case 1:
             strcat(sign_in_feedback, "Cannot find account.");
-            sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
+            sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));\
+            memset(sign_in_feedback, 0, sizeof(sign_in_feedback));
             break;
         case 2:
             strcat(sign_in_feedback, "Account is not ready.");
             sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
+            memset(sign_in_feedback, 0, sizeof(sign_in_feedback));
             break;
         case 3:
             strcat(sign_in_feedback, "Not OK.");
-            sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
             password_incorrect_times--;
-            if(password_incorrect_times >= 0) {
+            if(password_incorrect_times <= 0) {
                 change_current_account_status(acc, username_buffer, 2);
+                strcat(sign_in_feedback, " Account is blocked.");
             }
+            sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
+            memset(sign_in_feedback, 0, sizeof(sign_in_feedback));
             break;
         default:
             strcat(sign_in_feedback, "Undefined Error.");
             sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
+            memset(sign_in_feedback, 0, sizeof(sign_in_feedback));
             break;
         }
         //-------------------------------------------------------------------

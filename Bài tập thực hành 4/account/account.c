@@ -151,7 +151,13 @@ Account *register_account(Account *acc)
 
 void update_file(Account *acc)
 {
+    printf("Im in\n");
     FILE *inp = fopen("nguoidung.txt", "w+");
+    if(inp==NULL){
+        printf("Cannot open file.\n");
+        return;
+    }
+    
     Account *cur = acc;
     while (cur != NULL)
     {
@@ -396,7 +402,6 @@ void change_current_account_status(Account *acc, char *username, int status)
         if (strcmp(cur->username, username) == 0)
         {
             cur->status = status;
-            return;
         }
         cur = cur->next;
     }
