@@ -9,10 +9,10 @@ client.o:
 	gcc -c client.c
 
 exception.o:
-	gcc -c exception.c
+	gcc -c exception/exception.c
 
 account.o:
-	gcc -c account.c
+	gcc -c account/account.c
 
 clean:
 	rm -f *.o *~ server client
