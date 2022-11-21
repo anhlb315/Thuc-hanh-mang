@@ -161,68 +161,35 @@ void update_file(Account *acc)
     fclose(inp);
 }
 
-void sign_in(Account *acc)
+int sign_in(Account *acc, char *username, char *password)
 {
-    printf("----Welcome to Sign in function.----\n");
-    char username[30];
-    char password[30];
-
-    int n = 3;
-    printf("Input your Username: ");
-    scanf("%s", username);
-
     if (check_user(acc, username) != 0)
     {
-        printf("Cannot find account \n");
-        return;
+        // Cannot find account
+        return 1;
     }
-    if (check_status(acc, username) == 0)
+    if (check_status(acc, username) == 0 || check_status(acc, username) == 2)
     {
-        printf("Account is blocked, you can't access this account !\n");
-        return;
+        // Account is either block or idle
+        return 2;
     }
-    if (check_status(acc, username) == 2)
+    if (check_password(acc, password) != 0)
     {
-        printf("Account is idle, you can't access this account !\n");
-        return;
+        // Password is incorrect
+        return 3;
     }
 
-    while (n > 0)
-    {
-        printf("Input your Password: ");
-        scanf("%s", password);
-        if (check_password(acc, password) != 0)
-        {
-            printf("Password is incorrect!\n");
-            n--;
-        }
-        else
-        {
-            printf("Hello %s, sign in is successful!\n", username);
-            Account *cur = acc;
-            while (cur != NULL)
-            {
-                if (strcmp(cur->username, username) == 0)
-                {
-                    cur->is_signed_in = 1;
-                }
-                cur = cur->next;
-            }
-            return;
-        }
-    }
-    printf("This account is blocked!\n");
+    printf("Hello %s, sign in is successful!\n", username);
     Account *cur = acc;
     while (cur != NULL)
     {
         if (strcmp(cur->username, username) == 0)
         {
-            cur->status = 0;
+            cur->is_signed_in = 1;
         }
         cur = cur->next;
     }
-    update_file(acc);
-    return;
+    return 0;
 }
 
 void search(Account *acc)
@@ -390,7 +357,8 @@ void change_password(Account *acc)
         return;
     }
 
-    if(check_signed_in(acc, username) == 0) {
+    if (check_signed_in(acc, username) == 0)
+    {
         printf("Yet signed in.\n");
         return;
     }
@@ -413,6 +381,22 @@ void change_password(Account *acc)
         {
             strcpy(cur->password, new_password);
             printf("Change password successfully.");
+        }
+        cur = cur->next;
+    }
+    update_file(acc);
+    return;
+}
+
+void change_current_account_status(Account *acc, char *username, int status)
+{
+    Account *cur = acc;
+    while (cur != NULL)
+    {
+        if (strcmp(cur->username, username) == 0)
+        {
+            cur->status = status;
+            return;
         }
         cur = cur->next;
     }

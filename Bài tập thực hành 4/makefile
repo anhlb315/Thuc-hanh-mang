@@ -1,6 +1,6 @@
-main: server.o client.o exception.o
-	gcc -o server server.o exception.o
-	gcc -o client client.o exception.o
+main: server.o client.o exception.o account.o
+	gcc -o server server.o exception.o account.o
+	gcc -o client client.o exception.o account.o
 
 server.o:
 	gcc -c server.c
@@ -10,6 +10,9 @@ client.o:
 
 exception.o:
 	gcc -c exception.c
+
+account.o:
+	gcc -c account.c
 
 clean:
 	rm -f *.o *~ server client

@@ -9,6 +9,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include "exception.h"
+#include "account.h"
 #define MAXLINE 1000
 
 int split(char *buffer, char *only_number, char *only_string)
@@ -86,8 +87,39 @@ int main(int argc, char *argv[])
         printf("Password: %s", password_buffer);
         printf("-----------------\n");
 
-        // Sent the response to client
-        sendto(listenfd, username_buffer, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
-        sendto(listenfd, password_buffer, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
+        //---------------Account---------------------------------------------
+        char sign_in_feedback[100];
+        int password_incorrect_times = 3;
+        Account *acc = NULL;
+        acc = read_account(acc);
+        // Sign in
+        switch (sign_in(acc, username_buffer, password_buffer))
+        {
+        case 0:
+            strcat(sign_in_feedback, "OK.");
+            sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
+            break;
+        case 1:
+            strcat(sign_in_feedback, "Cannot find account.");
+            sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
+            break;
+        case 2:
+            strcat(sign_in_feedback, "Account is not ready.");
+            sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
+            break;
+        case 3:
+            strcat(sign_in_feedback, "Not OK.");
+            sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
+            password_incorrect_times--;
+            if(password_incorrect_times >= 0) {
+                change_current_account_status(acc, username_buffer, 2);
+            }
+            break;
+        default:
+            strcat(sign_in_feedback, "Undefined Error.");
+            sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
+            break;
+        }
+        //-------------------------------------------------------------------
     } while (1);
 }

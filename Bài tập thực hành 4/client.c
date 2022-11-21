@@ -87,10 +87,8 @@ int main(int argc, char* argv[])
 
         // Waiting for response
         recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr*)NULL, NULL);
-        puts(buffer);
-        recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr*)NULL, NULL);
-        puts(buffer);
-        puts("------------------");
+        printf("Server's feedback: %s\n", buffer);
+        printf("------------------\n");
     } while(1);
 
     // Close the descriptor
