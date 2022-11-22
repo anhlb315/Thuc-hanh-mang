@@ -24,25 +24,32 @@ int main(int argc, char *argv[])
     char *ip_address = argv[1];   // Get IP from argv
     char *port_number = argv[2];  // Get Port number from argv
     int port = atoi(port_number); // int-type Port number
-
+    int sockfd = 0; // Socket
     struct sockaddr_in server_address;
 
+    // Using TCP
+    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
+	{ 
+		printf("Socket creation error.\n"); 
+		return 0;
+	}
+
     // Clear server_address
-    bzero(&server_address, sizeof(server_address));
-    server_address.sin_addr.s_addr = inet_addr(ip_address);
+    // bzero(&server_address, sizeof(server_address));
     server_address.sin_port = htons(port);
     server_address.sin_family = AF_INET;
-    int n; // ???
 
-    // Create datagram socket
-    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-
-    // Connect to server
-    if (connect(sockfd, (struct sockaddr *)&server_address, sizeof(server_address)) < 0)
-    {
-        printf("\nError: Connect failed.\n");
-        exit(0);
-    }
+    // Convert IPv4 and IPv6 addresses from text to binary form 
+	if(inet_pton(AF_INET, ip_address, &server_address.sin_addr) <= 0) 
+	{ 
+		printf("Invalid address / Address not supported.\n"); 
+		return 0; 
+	}
+    if (connect(sockfd, (struct sockaddr *)&server_address, sizeof(server_address)) < 0) 
+	{ 
+		printf("Connection Failed.\n"); 
+		return 0;
+	}
 
     do
     {
@@ -74,7 +81,7 @@ int main(int argc, char *argv[])
         {
             printf("Exit Program.\n");
             char exit_program[100] = "exit_program\0";
-            sendto(sockfd, exit_program, MAXLINE, 0, (struct sockaddr *)&server_address, sizeof(server_address));
+            send(sockfd, exit_program, strlen(exit_program), 0);
             break;
         }
 
@@ -88,11 +95,11 @@ int main(int argc, char *argv[])
         // Request to send datagram ???
         // No need to specify server address in sendto
         // Connect stores the peers IP and port
-        sendto(sockfd, username, MAXLINE, 0, (struct sockaddr *)&server_address, sizeof(server_address));
-        sendto(sockfd, password, MAXLINE, 0, (struct sockaddr *)&server_address, sizeof(server_address));
+        send(sockfd, username, strlen(username), 0);
+        send(sockfd, password, strlen(password), 0);
 
         // Waiting for response
-        recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)NULL, NULL);
+        recv(sockfd , buffer, strlen(buffer), 0); 
         switch (atoi(buffer))
         {
         case 0:
@@ -139,10 +146,10 @@ int main(int argc, char *argv[])
                     goto goal3;
                 }
 
-                sendto(sockfd, confirm_password, MAXLINE, 0, (struct sockaddr *)&server_address, sizeof(server_address));
-                recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)NULL, NULL);
-                recvfrom(sockfd, only_number, sizeof(buffer), 0, (struct sockaddr *)NULL, NULL);
-                recvfrom(sockfd, only_string, sizeof(buffer), 0, (struct sockaddr *)NULL, NULL);
+                send(sockfd, confirm_password, strlen(confirm_password), 0);
+                recv(sockfd, buffer, strlen(buffer), 0);
+                recv(sockfd, only_number, strlen(only_number), 0);
+                recv(sockfd, only_string, strlen(only_string), 0);
                 if (atoi(buffer) == 0)
                 {
                     printf("Encoded password: %s %s\n", only_number, only_string);
@@ -152,13 +159,13 @@ int main(int argc, char *argv[])
             else if (choice[0] == 110)
             {
                 char request[2] = "0";
-                sendto(sockfd, request, MAXLINE, 0, (struct sockaddr *)&server_address, sizeof(server_address));
+                send(sockfd, request, strlen(request), 0);
             }
             else
             {
                 char sign_out_request[100] = "bye\0";
-                sendto(sockfd, sign_out_request, MAXLINE, 0, (struct sockaddr *)&server_address, sizeof(server_address));
-                recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)NULL, NULL);
+                send(sockfd, sign_out_request, strlen(sign_out_request), 0);
+                recv(sockfd, buffer, strlen(buffer), 0);
                 if (strcmp(sign_out_request, buffer)==0)
                 {
                     printf("Sign out successfully.\n");
