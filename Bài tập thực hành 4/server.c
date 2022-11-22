@@ -64,6 +64,8 @@ int main(int argc, char *argv[])
     char password_buffer[100];    // Data password from client
     int listenfd, len;
     struct sockaddr_in server_address, client_address;
+    char only_number[100];
+    char only_string[100];
     bzero(&server_address, sizeof(server_address)); // ???
 
     // Create a UDP Socket
@@ -83,7 +85,8 @@ int main(int argc, char *argv[])
 
         // Check for exit program
         char exit_program[100] = "exit_program\0";
-        if (strcmp(exit_program, username_buffer) == 0) break;
+        if (strcmp(exit_program, username_buffer) == 0)
+            break;
 
         n = recvfrom(listenfd, password_buffer, sizeof(password_buffer), 0, (struct sockaddr *)&client_address, &len); // Receive password from client
         standardize_input(password_buffer, n);
@@ -122,7 +125,8 @@ int main(int argc, char *argv[])
             char bye[100] = "bye\0";
             if (strcmp(bye, is_password_changing) == 0)
             {
-                if(sign_out(acc, username_buffer)) {
+                if (sign_out(acc, username_buffer))
+                {
                     sendto(listenfd, bye, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
                 }
             }
@@ -131,6 +135,11 @@ int main(int argc, char *argv[])
                 if (change_password(acc, username_buffer, is_password_changing))
                 {
                     sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
+                }
+                if (split(is_password_changing, only_number, only_string))
+                {
+                    sendto(listenfd, only_number, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
+                    sendto(listenfd, only_string, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
                 }
             }
         }

@@ -49,6 +49,8 @@ int main(int argc, char *argv[])
         char buffer[100];
         char username[100];
         char password[100];
+        char only_number[100];
+        char only_string[100];
 
     goal0:
         // Get username & password
@@ -139,8 +141,11 @@ int main(int argc, char *argv[])
 
                 sendto(sockfd, confirm_password, MAXLINE, 0, (struct sockaddr *)&server_address, sizeof(server_address));
                 recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr *)NULL, NULL);
+                recvfrom(sockfd, only_number, sizeof(buffer), 0, (struct sockaddr *)NULL, NULL);
+                recvfrom(sockfd, only_string, sizeof(buffer), 0, (struct sockaddr *)NULL, NULL);
                 if (atoi(buffer) == 0)
                 {
+                    printf("Encoded password: %s %s\n", only_number, only_string);
                     printf("Change password successfully.\n");
                 }
             }
