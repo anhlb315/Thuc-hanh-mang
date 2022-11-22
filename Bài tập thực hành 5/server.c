@@ -51,7 +51,7 @@ int split(char *buffer, char *only_number, char *only_string)
 int main(int argc, char *argv[])
 {
     // Catch wrong input
-    if (argc == 1)
+    if (argc != 2)
     {
         printf("Please input port number\n");
         return 0;
@@ -63,10 +63,10 @@ int main(int argc, char *argv[])
     int listenfd, new_socket;
     int opt = 1;
     struct sockaddr_in server_address, client_address;
-    int len = sizeof(server_address);
-    // bzero(&server_address, sizeof(server_address));
+    int len = sizeof(struct sockaddr_in);
+    bzero(&server_address, sizeof(server_address));
 
-    // Create a UDP Socket
+    // Create a TCP Socket
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
     if (listenfd == 0)
     {
@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    server_address.sin_addr.s_addr = INADDR_ANY;
+    server_address.sin_addr.s_addr = htonl(INADDR_ANY);
     server_address.sin_port = htons(port);
     server_address.sin_family = AF_INET;
 
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
         printf("listen\n");
         return 0;
     }
-    if ((new_socket = accept(listenfd, (struct sockaddr *)&server_address, (socklen_t *)&len)) < 0)
+    if ((new_socket = accept(listenfd, (struct sockaddr *)&client_address, &len)) < 0)
     {
         printf("accept\n");
         return 0;
@@ -110,8 +110,6 @@ int main(int argc, char *argv[])
         char only_string[100] = {0};
 
         // Receive the datagram
-        // int n = recvfrom(listenfd, username_buffer, sizeof(username_buffer), 0, (struct sockaddr *)&client_address, &len); // Receive username from client
-        // standardize_input(username_buffer, n);
         recv(listenfd, username_buffer, strlen(username_buffer), 0);
 
         // Check for exit program
@@ -119,10 +117,7 @@ int main(int argc, char *argv[])
         if (strcmp(exit_program, username_buffer) == 0)
             break;
 
-        // n = recvfrom(listenfd, password_buffer, sizeof(password_buffer), 0, (struct sockaddr *)&client_address, &len); // Receive password from client
         recv(listenfd, password_buffer, strlen(password_buffer), 0);
-        // standardize_input(password_buffer, n);
-        // Note that these buffers have "\n" at the end
 
         printf("Username: %s\n", username_buffer);
         printf("Password: %s\n", password_buffer);
@@ -147,22 +142,18 @@ int main(int argc, char *argv[])
         }
 
         sprintf(sign_in_feedback, "%d", feedback);
-        // sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
         send(listenfd, sign_in_feedback, strlen(sign_in_feedback), 0);
 
         if (feedback == 0) // If signed in
         {
             char is_password_changing[10];
-            // n = recvfrom(listenfd, is_password_changing, sizeof(is_password_changing), 0, (struct sockaddr *)&client_address, &len); // Receive from client
             recv(listenfd, is_password_changing, strlen(is_password_changing), 0);
-            // standardize_input(is_password_changing, n);
 
             char bye[100] = "bye\0";
             if (strcmp(bye, is_password_changing) == 0)
             {
                 if (sign_out(acc, username_buffer))
                 {
-                    // sendto(listenfd, bye, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
                     send(listenfd, bye, strlen(bye), 0);
                 }
             }
@@ -170,14 +161,11 @@ int main(int argc, char *argv[])
             {
                 if (change_password(acc, username_buffer, is_password_changing))
                 {
-                    // sendto(listenfd, sign_in_feedback, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
                     send(listenfd, sign_in_feedback, strlen(sign_in_feedback), 0);
                 }
                 if (split(is_password_changing, only_number, only_string))
                 {
-                    // sendto(listenfd, only_number, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
                     send(listenfd, only_number, strlen(only_number), 0);
-                    // sendto(listenfd, only_string, MAXLINE, 0, (struct sockaddr *)&client_address, sizeof(client_address));
                     send(listenfd, only_string, strlen(only_string), 0);
                 }
             }

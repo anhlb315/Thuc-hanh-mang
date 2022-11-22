@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 	}
 
     // Clear server_address
-    // bzero(&server_address, sizeof(server_address));
+    bzero(&server_address, sizeof(server_address));
     server_address.sin_port = htons(port);
     server_address.sin_family = AF_INET;
 
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 		printf("Invalid address / Address not supported.\n"); 
 		return 0; 
 	}
-    if (connect(sockfd, (struct sockaddr *)&server_address, sizeof(server_address)) < 0) 
+    if (connect(sockfd, (struct sockaddr *)&server_address, sizeof(struct sockaddr_in)) < 0) 
 	{ 
 		printf("Connection Failed.\n"); 
 		return 0;
