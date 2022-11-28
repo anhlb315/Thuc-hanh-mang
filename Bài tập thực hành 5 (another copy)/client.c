@@ -170,6 +170,11 @@ int main(int argc, char *argv[])
 	int sockfd, connfd;
 	struct sockaddr_in servaddr, cli;
 
+	if (port < 1 || port > 65535) {
+		printf("Invalid port.\n");
+		return 0;
+	}
+
 	// socket create and verification
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd == -1)
