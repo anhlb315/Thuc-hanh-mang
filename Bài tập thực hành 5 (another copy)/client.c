@@ -6,29 +6,60 @@
 #include <strings.h> // bzero()
 #include <sys/socket.h>
 #include <unistd.h> // read(), write(), close()
-#define MAX 80
+#include "exception/exception.h"
+#define BUFFER_SIZE 1024
 #define PORT 8080
 
 void func(int sockfd)
 {
-	char buff[MAX];
+	char username[BUFFER_SIZE];
+	char password[BUFFER_SIZE];
 	int n;
+
 	for (;;)
 	{
-		bzero(buff, sizeof(buff));
-		printf("Enter the string : ");
-		n = 0;
-		while ((buff[n++] = getchar()) != '\n')
-			;
-		write(sockfd, buff, sizeof(buff));
-		bzero(buff, sizeof(buff));
-		read(sockfd, buff, sizeof(buff));
-		printf("From Server : %s", buff);
-		if ((strncmp(buff, "exit", 4)) == 0)
+	goal0:
+		// Clean buffers
+		bzero(username, sizeof(username));
+		bzero(password, sizeof(password));
+
+		// Get user's input
+		printf("Username: ");
+		if (fgets(username, sizeof(username), stdin) == NULL)
+			break;
+
+		// Check for exception
+		if (check_spaces(username, strlen(username)))
 		{
-			printf("Client Exit...\n");
+			printf("Username contains white space. Please enter again.\n");
+			goto goal0;
+		}
+	goal1:
+		printf("Password: ");
+		if (fgets(password, sizeof(username), stdin) == NULL)
+			break;
+
+		// Check for '\n' input
+		if (strcmp(username, "\n") == 0 && strcmp(password, "\n") == 0)
+		{
+			printf("Exit Program.\n");
+			char exit_program[100] = "exit_program\0";
+			write(sockfd, exit_program, strlen(exit_program));
 			break;
 		}
+
+		// Check for scape
+		if (check_spaces(password, strlen(password)))
+		{
+			printf("Password contains white space. Please enter again.\n");
+			goto goal1;
+		}
+
+		// Send username & password to server
+		write(sockfd, username, sizeof(username));
+		write(sockfd, password, sizeof(password));
+
+		printf("---------------------\n");
 	}
 }
 
