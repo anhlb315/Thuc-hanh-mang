@@ -14,7 +14,16 @@ void func(int sockfd)
 {
 	char username[BUFFER_SIZE];
 	char password[BUFFER_SIZE];
+	char sign_in_feedback[BUFFER_SIZE];
 	int n;
+	char choice[BUFFER_SIZE];
+	char bye[BUFFER_SIZE] = "bye\n\0";
+	char new_password[BUFFER_SIZE];
+	char confirm_password[BUFFER_SIZE];
+	char buffer[BUFFER_SIZE];
+	char only_number[BUFFER_SIZE];
+	char only_string[BUFFER_SIZE];
+	char sign_out_request[100] = "bye\0";
 
 	for (;;)
 	{
@@ -58,6 +67,89 @@ void func(int sockfd)
 		// Send username & password to server
 		write(sockfd, username, sizeof(username));
 		write(sockfd, password, sizeof(password));
+
+		// Sign in response
+		read(sockfd, sign_in_feedback, BUFFER_SIZE);
+		switch (atoi(sign_in_feedback))
+		{
+		case 0:
+			printf("OK.\n");
+			printf("------------------\n");
+		goal2:
+			printf("Do you want to change password or sign out?(y/n/bye): ");
+			if (fgets(choice, BUFFER_SIZE, stdin) == NULL)
+				break;
+
+			if (choice[0] != 121 && choice[0] != 110 && !(strcmp(choice, bye) == 0))
+			{
+				printf("Wrong input. Only y or n.\n");
+				goto goal2;
+			}
+
+			if (choice[0] == 121)
+			{
+			goal3:
+				printf("New password: ");
+				if (fgets(new_password, BUFFER_SIZE, stdin) == NULL)
+					break;
+
+				// Check new_password
+				if (check_new_password(new_password))
+				{
+					printf("Can only contains number or letter. Try again please.\n");
+					goto goal3;
+				}
+			goal4:
+				printf("Confirm password: ");
+				if (fgets(confirm_password, BUFFER_SIZE, stdin) == NULL)
+					break;
+
+				// Check confirm_password
+				if (check_confirm_password(confirm_password, new_password))
+				{
+					goto goal4;
+				}
+
+				write(sockfd, confirm_password, sizeof(confirm_password));
+				read(sockfd, buffer, BUFFER_SIZE);
+				read(sockfd, only_number, BUFFER_SIZE);
+				read(sockfd, only_string, BUFFER_SIZE);
+				if (atoi(buffer) == 0)
+				{
+					printf("Encoded password: %s %s\n", only_number, only_string);
+					printf("Change password successfully.\n");
+				}
+			}
+			else if (choice[0] == 110)
+			{
+				char request[2] = "0";
+				write(sockfd, request, strlen(request));
+			}
+			else
+			{
+				write(sockfd, sign_out_request, strlen(sign_out_request));
+				read(sockfd, buffer, BUFFER_SIZE);
+				if (strcmp(sign_out_request, buffer) == 0)
+				{
+					printf("Sign out successfully.\n");
+				}
+			}
+			break;
+		case 1:
+			printf("Cannot find account.\n");
+			break;
+		case 2:
+			printf("Account is not ready.\n");
+			break;
+		case 3:
+			printf("Not OK.\n");
+			break;
+		case 4:
+			printf("Not OK. Account is blocked.\n");
+			break;
+		default:
+			break;
+		}
 
 		printf("---------------------\n");
 	}
