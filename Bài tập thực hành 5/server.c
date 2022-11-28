@@ -1,18 +1,15 @@
-// Server-side
 #include <stdio.h>
-#include <strings.h>
-#include <sys/types.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
+#include <netdb.h>
 #include <netinet/in.h>
-#include <string.h>
-#include <ctype.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h> // read(), write(), close()
 #include "exception/exception.h"
 #include "account/account.h"
-#define MAXLINE 1000
 #define BUFFER_SIZE 1024
-#define BACKLOG 2
+#define PORT 8080
 
 int split(char *buffer, char *only_number, char *only_string)
 {
@@ -50,6 +47,91 @@ int split(char *buffer, char *only_number, char *only_string)
     return 1;
 }
 
+void func(int connfd)
+{
+    char username[BUFFER_SIZE];
+    char password[BUFFER_SIZE];
+    int n;
+    char sign_in_feedback[BUFFER_SIZE];
+    Account *acc = NULL;
+    acc = read_account(acc);
+    int feedback;
+    int password_incorrect_times = 3;
+    char bye[100] = "bye\0";
+    char is_password_changing[BUFFER_SIZE];
+    char only_number[BUFFER_SIZE];
+    char only_string[BUFFER_SIZE];
+    char exit_program[100] = "exit_program\0";
+
+    for (;;)
+    {
+        // Clean buffers
+        bzero(username, sizeof(username));
+        bzero(password, sizeof(password));
+
+        // Receive username & password from client
+        read(connfd, username, sizeof(username));
+        read(connfd, password, sizeof(password));
+
+        // Standardize strings
+        standardize_input(username, sizeof(username));
+        standardize_input(password, sizeof(password));
+
+        // Check for exit program
+        if (strcmp(exit_program, username) == 0)
+            break;
+
+        // Print username & password
+        printf("Username: %s\n", username);
+        printf("Password: %s\n", password);
+
+        // Sign in
+        feedback = sign_in(acc, username, password);
+        if (feedback == 3) // If wrong password
+        {
+            password_incorrect_times--;
+            if (password_incorrect_times == 0)
+            {
+                change_current_account_status(acc, username, 2);
+
+                feedback++; // 4 mean account is blocked
+            }
+        }
+
+        sprintf(sign_in_feedback, "%d", feedback);
+        write(connfd, sign_in_feedback, sizeof(sign_in_feedback));
+
+        if (feedback == 0) // If signed in
+        {
+            read(connfd, is_password_changing, sizeof(is_password_changing));
+            standardize_input(is_password_changing, sizeof(is_password_changing));
+
+            if (strcmp(bye, is_password_changing) == 0)
+            {
+                if (sign_out(acc, username))
+                {
+                    write(connfd, bye, sizeof(bye));
+                }
+            }
+            else if (strlen(is_password_changing) > 1)
+            {
+                if (change_password(acc, username, is_password_changing))
+                {
+                    write(connfd, sign_in_feedback, sizeof(sign_in_feedback));
+                }
+                if (split(is_password_changing, only_number, only_string))
+                {
+                    write(connfd, only_number, sizeof(only_number));
+                    write(connfd, only_string, sizeof(only_string));
+                }
+            }
+        }
+
+        printf("---------------------\n");
+    }
+}
+
+// Driver function
 int main(int argc, char *argv[])
 {
     // Catch wrong input
@@ -59,123 +141,66 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    int password_incorrect_times = 3; // Counting enter wrong password time
     char *port_number = argv[1];
-    int port = atoi(port_number); // Get port from argv
-    int listenfd, new_socket;
-    int opt = 1;
-    struct sockaddr_in server_address, client_address;
-    int len = sizeof(struct sockaddr_in);
-    char username_buffer[BUFFER_SIZE]; // Data username from client
-    char password_buffer[BUFFER_SIZE]; // Data password from client
-    char only_number[BUFFER_SIZE];
-    char only_string[BUFFER_SIZE];
+    int port = atoi(port_number);
+    int sockfd, connfd, len;
+    struct sockaddr_in servaddr, cli;
 
-    // Create a TCP Socket
-    listenfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (listenfd == -1)
+    if (port < 1 || port > 65535) {
+		printf("Invalid port.\n");
+		return 0;
+	}
+
+    // socket create and verification
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd == -1)
     {
-        perror("socket failed");
-        exit(EXIT_FAILURE);
+        printf("socket creation failed...\n");
+        exit(0);
     }
+    else
+        printf("Socket successfully created..\n");
+    bzero(&servaddr, sizeof(servaddr));
 
-    // Forcefully attaching socket to the port
-    // if (setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
-    // {
-    //     perror("setsockopt");
-    //     exit(EXIT_FAILURE);
-    // }
+    // assign IP, PORT
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servaddr.sin_port = htons(port);
 
-    bzero(&server_address, sizeof(server_address));
-    server_address.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_address.sin_port = htons(port);
-    server_address.sin_family = AF_INET;
-
-    // Forcefully attaching socket to the port
-    if (bind(listenfd, (struct sockaddr *)&server_address, sizeof(server_address)) < 0)
+    // Binding newly created socket to given IP and verification
+    if ((bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr))) != 0)
     {
-        perror("bind failed");
-        exit(EXIT_FAILURE);
+        printf("socket bind failed...\n");
+        exit(0);
     }
-    if (listen(listenfd, BACKLOG) < 0)
+    else
+        printf("Socket successfully binded..\n");
+
+    // Now server is ready to listen and verification
+    if ((listen(sockfd, 5)) != 0)
     {
-        perror("listen");
-        exit(EXIT_FAILURE);
+        printf("Listen failed...\n");
+        exit(0);
     }
-    if ((new_socket = accept(listenfd, (struct sockaddr *)&client_address, &len)) < 0)
+    else
+        printf("Server listening..\n");
+    len = sizeof(cli);
+
+    // Accept the data packet from client and verification
+    connfd = accept(sockfd, (struct sockaddr *)&cli, &len);
+    if (connfd < 0)
     {
-        perror("accept");
-        exit(EXIT_FAILURE);
+        printf("server accept failed...\n");
+        exit(0);
     }
+    else
+        printf("server accept the client...\n");
 
-    do
-    {
-        // Receive the datagram
-        read(listenfd, username_buffer, BUFFER_SIZE);
+    // Function for chatting between client and server
+    func(connfd);
 
-        // Check for exit program
-        char exit_program[100] = "exit_program\0";
-        if (strcmp(exit_program, username_buffer) == 0)
-            break;
-
-        read(listenfd, password_buffer, BUFFER_SIZE);
-
-        printf("Username: %s\n", username_buffer);
-        printf("Password: %s\n", password_buffer);
-        printf("-----------------\n");
-
-        //---------------Account---------------------------------------------
-        char sign_in_feedback[100];
-        Account *acc = NULL;
-        acc = read_account(acc);
-
-        // Sign in
-        int feedback = sign_in(acc, username_buffer, password_buffer);
-        if (feedback == 3) // If wrong password
-        {
-            password_incorrect_times--;
-            if (password_incorrect_times == 0)
-            {
-                change_current_account_status(acc, username_buffer, 2);
-
-                feedback++; // 4 mean account is blocked
-            }
-        }
-
-        sprintf(sign_in_feedback, "%d", feedback);
-        write(listenfd, sign_in_feedback, strlen(sign_in_feedback));
-
-        if (feedback == 0) // If signed in
-        {
-            char is_password_changing[10];
-            read(listenfd, is_password_changing, BUFFER_SIZE);
-
-            char bye[100] = "bye\0";
-            if (strcmp(bye, is_password_changing) == 0)
-            {
-                if (sign_out(acc, username_buffer))
-                {
-                    write(listenfd, bye, strlen(bye));
-                }
-            }
-            else if (strlen(is_password_changing) > 1)
-            {
-                if (change_password(acc, username_buffer, is_password_changing))
-                {
-                    write(listenfd, sign_in_feedback, strlen(sign_in_feedback));
-                }
-                if (split(is_password_changing, only_number, only_string))
-                {
-                    write(listenfd, only_number, strlen(only_number));
-                    write(listenfd, only_string, strlen(only_string));
-                }
-            }
-        }
-
-        //-------------------------------------------------------------------
-    } while (1);
-
-    close(listenfd);
-
-    return 0;
+    // After chatting close the socket
+    printf("Closing server...\n");
+    close(sockfd);
+    printf("Server's closed.\n");
 }
