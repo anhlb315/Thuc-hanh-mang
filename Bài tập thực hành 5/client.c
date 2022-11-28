@@ -11,6 +11,7 @@
 #include <ctype.h>
 #include "exception/exception.h"
 #define MAXLINE 1000
+#define BUFFER_SIZE 1024
 
 int main(int argc, char *argv[])
 {
@@ -21,48 +22,51 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    // Some variables
     char *ip_address = argv[1];   // Get IP from argv
     char *port_number = argv[2];  // Get Port number from argv
     int port = atoi(port_number); // int-type Port number
-    int sockfd = 0; // Socket
+    int sockfd = 0;               // Socket
     struct sockaddr_in server_address;
+    char buffer[BUFFER_SIZE];
+    char username[BUFFER_SIZE];
+    char password[BUFFER_SIZE];
+    char only_number[BUFFER_SIZE];
+    char only_string[BUFFER_SIZE];
+    char choice[BUFFER_SIZE];
+    char new_password[BUFFER_SIZE];
+    char confirm_password[BUFFER_SIZE];
 
     // Using TCP
-    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
-	{ 
-		printf("Socket creation error.\n"); 
-		return 0;
-	}
+    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    {
+        printf("Socket creation error.\n");
+        return 0;
+    }
 
     // Clear server_address
     bzero(&server_address, sizeof(server_address));
     server_address.sin_port = htons(port);
     server_address.sin_family = AF_INET;
 
-    // Convert IPv4 and IPv6 addresses from text to binary form 
-	if(inet_pton(AF_INET, ip_address, &server_address.sin_addr) <= 0) 
-	{ 
-		printf("Invalid address / Address not supported.\n"); 
-		return 0; 
-	}
-    if (connect(sockfd, (struct sockaddr *)&server_address, sizeof(struct sockaddr_in)) < 0) 
-	{ 
-		printf("Connection Failed.\n"); 
-		return 0;
-	}
+    // Convert IPv4 and IPv6 addresses from text to binary form
+    if (inet_pton(AF_INET, ip_address, &server_address.sin_addr) <= 0)
+    {
+        printf("Invalid address / Address not supported.\n");
+        return 0;
+    }
+    if (connect(sockfd, (struct sockaddr *)&server_address, sizeof(struct sockaddr_in)) < 0)
+    {
+        printf("Connection Failed.\n");
+        return 0;
+    }
 
     do
     {
-        char buffer[100];
-        char username[100];
-        char password[100];
-        char only_number[100];
-        char only_string[100];
-
     goal0:
         // Get username & password
         printf("Username: ");
-        if (fgets(username, sizeof(username), stdin) == NULL)
+        if (fgets(username, BUFFER_SIZE, stdin) == NULL)
             break;
 
         // Check for scape
@@ -73,7 +77,7 @@ int main(int argc, char *argv[])
         }
 
         printf("Password: ");
-        if (fgets(password, sizeof(password), stdin) == NULL)
+        if (fgets(password, BUFFER_SIZE, stdin) == NULL)
             break;
 
         // Check for '\n' input
@@ -81,7 +85,7 @@ int main(int argc, char *argv[])
         {
             printf("Exit Program.\n");
             char exit_program[100] = "exit_program\0";
-            send(sockfd, exit_program, strlen(exit_program), 0);
+            write(sockfd, exit_program, strlen(exit_program));
             break;
         }
 
@@ -95,21 +99,19 @@ int main(int argc, char *argv[])
         // Request to send datagram ???
         // No need to specify server address in sendto
         // Connect stores the peers IP and port
-        send(sockfd, username, strlen(username), 0);
-        send(sockfd, password, strlen(password), 0);
+        write(sockfd, username, strlen(username));
+        write(sockfd, password, strlen(password));
 
         // Waiting for response
-        recv(sockfd , buffer, strlen(buffer), 0); 
+        read(sockfd, buffer, BUFFER_SIZE);
         switch (atoi(buffer))
         {
         case 0:
-            char choice[100];
-
             printf("OK.\n");
             printf("------------------\n");
         goal1:
             printf("Do you want to change password or sign out?(y/n/bye): ");
-            if (fgets(choice, sizeof(choice), stdin) == NULL)
+            if (fgets(choice, BUFFER_SIZE, stdin) == NULL)
                 break;
 
             char bye[100] = "bye\n\0";
@@ -121,10 +123,9 @@ int main(int argc, char *argv[])
 
             if (choice[0] == 121)
             {
-                char new_password[100];
             goal2:
                 printf("New password: ");
-                if (fgets(new_password, sizeof(new_password), stdin) == NULL)
+                if (fgets(new_password, BUFFER_SIZE, stdin) == NULL)
                     break;
 
                 // Check new_password
@@ -133,11 +134,9 @@ int main(int argc, char *argv[])
                     printf("Can only contains number or letter. Try again please.\n");
                     goto goal2;
                 }
-
-                char confirm_password[100];
             goal3:
                 printf("Confirm password: ");
-                if (fgets(confirm_password, sizeof(confirm_password), stdin) == NULL)
+                if (fgets(confirm_password, BUFFER_SIZE, stdin) == NULL)
                     break;
 
                 // Check confirm_password
@@ -146,10 +145,10 @@ int main(int argc, char *argv[])
                     goto goal3;
                 }
 
-                send(sockfd, confirm_password, strlen(confirm_password), 0);
-                recv(sockfd, buffer, strlen(buffer), 0);
-                recv(sockfd, only_number, strlen(only_number), 0);
-                recv(sockfd, only_string, strlen(only_string), 0);
+                write(sockfd, confirm_password, strlen(confirm_password));
+                read(sockfd, buffer, BUFFER_SIZE);
+                read(sockfd, only_number, BUFFER_SIZE);
+                read(sockfd, only_string, BUFFER_SIZE);
                 if (atoi(buffer) == 0)
                 {
                     printf("Encoded password: %s %s\n", only_number, only_string);
@@ -159,14 +158,14 @@ int main(int argc, char *argv[])
             else if (choice[0] == 110)
             {
                 char request[2] = "0";
-                send(sockfd, request, strlen(request), 0);
+                write(sockfd, request, strlen(request));
             }
             else
             {
                 char sign_out_request[100] = "bye\0";
-                send(sockfd, sign_out_request, strlen(sign_out_request), 0);
-                recv(sockfd, buffer, strlen(buffer), 0);
-                if (strcmp(sign_out_request, buffer)==0)
+                write(sockfd, sign_out_request, strlen(sign_out_request));
+                read(sockfd, buffer, BUFFER_SIZE);
+                if (strcmp(sign_out_request, buffer) == 0)
                 {
                     printf("Sign out successfully.\n");
                 }

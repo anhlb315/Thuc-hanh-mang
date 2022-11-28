@@ -11,6 +11,8 @@
 #include "exception/exception.h"
 #include "account/account.h"
 #define MAXLINE 1000
+#define BUFFER_SIZE 1024
+#define BACKLOG 2
 
 int split(char *buffer, char *only_number, char *only_string)
 {
@@ -64,23 +66,27 @@ int main(int argc, char *argv[])
     int opt = 1;
     struct sockaddr_in server_address, client_address;
     int len = sizeof(struct sockaddr_in);
-    bzero(&server_address, sizeof(server_address));
+    char username_buffer[BUFFER_SIZE]; // Data username from client
+    char password_buffer[BUFFER_SIZE]; // Data password from client
+    char only_number[BUFFER_SIZE];
+    char only_string[BUFFER_SIZE];
 
     // Create a TCP Socket
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (listenfd == 0)
+    if (listenfd == -1)
     {
-        printf("Socket failed.\n");
-        return 0;
+        perror("socket failed");
+        exit(EXIT_FAILURE);
     }
 
     // Forcefully attaching socket to the port
-    if (setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
-    {
-        printf("setsockopt\n");
-        return 0;
-    }
+    // if (setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
+    // {
+    //     perror("setsockopt");
+    //     exit(EXIT_FAILURE);
+    // }
 
+    bzero(&server_address, sizeof(server_address));
     server_address.sin_addr.s_addr = htonl(INADDR_ANY);
     server_address.sin_port = htons(port);
     server_address.sin_family = AF_INET;
@@ -88,36 +94,31 @@ int main(int argc, char *argv[])
     // Forcefully attaching socket to the port
     if (bind(listenfd, (struct sockaddr *)&server_address, sizeof(server_address)) < 0)
     {
-        printf("bind failed\n");
-        return 0;
+        perror("bind failed");
+        exit(EXIT_FAILURE);
     }
-    if (listen(listenfd, 3) < 0)
+    if (listen(listenfd, BACKLOG) < 0)
     {
-        printf("listen\n");
-        return 0;
+        perror("listen");
+        exit(EXIT_FAILURE);
     }
     if ((new_socket = accept(listenfd, (struct sockaddr *)&client_address, &len)) < 0)
     {
-        printf("accept\n");
-        return 0;
+        perror("accept");
+        exit(EXIT_FAILURE);
     }
 
     do
     {
-        char username_buffer[100] = {0}; // Data username from client
-        char password_buffer[100] = {0}; // Data password from client
-        char only_number[100] = {0};
-        char only_string[100] = {0};
-
         // Receive the datagram
-        recv(listenfd, username_buffer, strlen(username_buffer), 0);
+        read(listenfd, username_buffer, BUFFER_SIZE);
 
         // Check for exit program
         char exit_program[100] = "exit_program\0";
         if (strcmp(exit_program, username_buffer) == 0)
             break;
 
-        recv(listenfd, password_buffer, strlen(password_buffer), 0);
+        read(listenfd, password_buffer, BUFFER_SIZE);
 
         printf("Username: %s\n", username_buffer);
         printf("Password: %s\n", password_buffer);
@@ -142,35 +143,39 @@ int main(int argc, char *argv[])
         }
 
         sprintf(sign_in_feedback, "%d", feedback);
-        send(listenfd, sign_in_feedback, strlen(sign_in_feedback), 0);
+        write(listenfd, sign_in_feedback, strlen(sign_in_feedback));
 
         if (feedback == 0) // If signed in
         {
             char is_password_changing[10];
-            recv(listenfd, is_password_changing, strlen(is_password_changing), 0);
+            read(listenfd, is_password_changing, BUFFER_SIZE);
 
             char bye[100] = "bye\0";
             if (strcmp(bye, is_password_changing) == 0)
             {
                 if (sign_out(acc, username_buffer))
                 {
-                    send(listenfd, bye, strlen(bye), 0);
+                    write(listenfd, bye, strlen(bye));
                 }
             }
             else if (strlen(is_password_changing) > 1)
             {
                 if (change_password(acc, username_buffer, is_password_changing))
                 {
-                    send(listenfd, sign_in_feedback, strlen(sign_in_feedback), 0);
+                    write(listenfd, sign_in_feedback, strlen(sign_in_feedback));
                 }
                 if (split(is_password_changing, only_number, only_string))
                 {
-                    send(listenfd, only_number, strlen(only_number), 0);
-                    send(listenfd, only_string, strlen(only_string), 0);
+                    write(listenfd, only_number, strlen(only_number));
+                    write(listenfd, only_string, strlen(only_string));
                 }
             }
         }
 
         //-------------------------------------------------------------------
     } while (1);
+
+    close(listenfd);
+
+    return 0;
 }
