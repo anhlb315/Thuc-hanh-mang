@@ -60,7 +60,8 @@ void func(int connfd)
     char bye[100] = "bye\0";
     char is_password_changing[BUFFER_SIZE];
     char only_number[BUFFER_SIZE];
-	char only_string[BUFFER_SIZE];
+    char only_string[BUFFER_SIZE];
+    char exit_program[100] = "exit_program\0";
 
     for (;;)
     {
@@ -75,6 +76,10 @@ void func(int connfd)
         // Standardize strings
         standardize_input(username, sizeof(username));
         standardize_input(password, sizeof(password));
+
+        // Check for exit program
+        if (strcmp(exit_program, username) == 0)
+            break;
 
         // Print username & password
         printf("Username: %s\n", username);
@@ -99,6 +104,7 @@ void func(int connfd)
         if (feedback == 0) // If signed in
         {
             read(connfd, is_password_changing, sizeof(is_password_changing));
+            standardize_input(is_password_changing, sizeof(is_password_changing));
 
             if (strcmp(bye, is_password_changing) == 0)
             {
@@ -180,5 +186,7 @@ int main()
     func(connfd);
 
     // After chatting close the socket
+    printf("Closing server...\n");
     close(sockfd);
+    printf("Server's closed.\n");
 }
