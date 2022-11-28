@@ -166,11 +166,20 @@ int main(int argc, char *argv[])
 
 	char *ip_address = argv[1];
 	char *port_number = argv[2];
-    int port = atoi(port_number);
+	int port = atoi(port_number);
 	int sockfd, connfd;
 	struct sockaddr_in servaddr, cli;
 
-	if (port < 1 || port > 65535) {
+	// Check if address valid
+	if (inet_addr(ip_address) == -1)
+	{
+		printf("Invalid IP address.\n");
+		return 0;
+	}
+
+	// Check if port valid
+	if (port < 1 || port > 65535)
+	{
 		printf("Invalid port.\n");
 		return 0;
 	}
