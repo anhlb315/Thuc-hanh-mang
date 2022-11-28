@@ -132,8 +132,17 @@ void func(int connfd)
 }
 
 // Driver function
-int main()
+int main(int argc, char *argv[])
 {
+    // Catch wrong input
+    if (argc != 2)
+    {
+        printf("Please input port number\n");
+        return 0;
+    }
+
+    char *port_number = argv[1];
+    int port = atoi(port_number);
     int sockfd, connfd, len;
     struct sockaddr_in servaddr, cli;
 
@@ -151,7 +160,7 @@ int main()
     // assign IP, PORT
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = htons(PORT);
+    servaddr.sin_port = htons(port);
 
     // Binding newly created socket to given IP and verification
     if ((bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr))) != 0)
