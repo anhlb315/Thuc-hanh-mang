@@ -13,7 +13,14 @@
 
 void func(int socket_fd)
 {
-	printf("Main function\n");
+	char message[BUFFER_SIZE];
+
+	while(1)
+	{
+		printf("> ");
+		fgets(message, sizeof(message), stdin);
+		send(socket_fd, message, sizeof(message), 0);
+	}
 	return;
 }
 

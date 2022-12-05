@@ -11,9 +11,16 @@
 #define BUFFER_SIZE 1024
 #define PORT 8080
 
-void func(int connect_fd, int pid)
+void func(int connect_fd)
 {
-    printf("Hello from child %d\n", pid);
+    char message[BUFFER_SIZE];
+    while(1)
+    {
+        recv(connect_fd, message, sizeof(message), 0);
+        standardize_input(message, sizeof(message));
+        printf("> %s\n", message);
+        bzero(message, sizeof(message));
+    }
     return;
 }
 
@@ -33,6 +40,7 @@ int main(int argc, char *argv[])
     struct sockaddr_in server_address, client_address;
     int pid;
     int child_counter = 0;
+    char client_address_str[BUFFER_SIZE];
 
     if (port < 1 || port > 65535)
     {
@@ -85,21 +93,27 @@ int main(int argc, char *argv[])
             return 0;
         }
         else
-            printf("Server accept the client_address\n");
+        {
+            inet_ntop(AF_INET, &client_address, client_address_str, INET_ADDRSTRLEN);
+            printf("Server accept the client: %s\n", client_address_str);
+        }
 
-        if((pid = fork()) == -1)
+        if ((pid = fork()) == -1)
         {
             close(connect_fd);
             continue;
         }
+        else if (pid == 0)
+        {
+            // close(socket_fd);
+            printf("pid: %d\n", pid);
+            func(connect_fd);
+            close(connect_fd);
+        }
         else
         {
-            printf("This is child %d\n", pid);
-            child_counter++;
+            printf("pid: %d\n", pid);
         }
-
-        // Function for chatting between client_address and server
-        func(connect_fd, pid);
     }
 
     // After chatting close the socket
