@@ -13,6 +13,7 @@
 
 void func(int socket_fd)
 {
+	printf("Main function\n");
 	return;
 }
 
@@ -21,27 +22,27 @@ int main(int argc, char *argv[])
 	// Check input
 	if (argc != 3)
 	{
-		printf("Please input IP address and Port number\n");
+		printf("Error: Please input IP address and Port number\n");
 		return 0;
 	}
 
 	char *ip_address = argv[1];
 	char *port_number = argv[2];
 	int port = atoi(port_number);
-	int socket_fd, connfd;
-	struct sockaddr_in servaddr;
+	int socket_fd;
+	struct sockaddr_in server_address;
 
 	// Check if address valid
 	if (inet_addr(ip_address) == -1)
 	{
-		printf("Invalid IP address.\n");
+		printf("Error: Invalid IP address\n");
 		return 0;
 	}
 
 	// Check if port valid
 	if (port < 1 || port > 65535)
 	{
-		printf("Invalid port.\n");
+		printf("Error: Invalid port\n");
 		return 0;
 	}
 
@@ -49,30 +50,33 @@ int main(int argc, char *argv[])
 	socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (socket_fd == -1)
 	{
-		printf("socket creation failed...\n");
-		exit(0);
+		printf("Error: Socket creation failed\n");
+		return 0;
 	}
 	else
-		printf("Socket successfully created..\n");
-	bzero(&servaddr, sizeof(servaddr));
+		printf("Socket successfully created\n");
+	bzero(&server_address, sizeof(server_address));
 
 	// assign IP, PORT
-	servaddr.sin_family = AF_INET;
-	servaddr.sin_addr.s_addr = inet_addr(ip_address);
-	servaddr.sin_port = htons(port);
+	server_address.sin_family = AF_INET;
+	server_address.sin_addr.s_addr = inet_addr(ip_address);
+	server_address.sin_port = htons(port);
 
 	// connect the client socket to server socket
-	if (connect(socket_fd, (struct sockaddr *)&servaddr, sizeof(servaddr)) != 0)
+	if (connect(socket_fd, (struct sockaddr *)&server_address, sizeof(server_address)) != 0)
 	{
-		printf("connection with the server failed...\n");
-		exit(0);
+		printf("Error: Connection with the server failed\n");
+		return 0;
 	}
 	else
-		printf("connected to the server..\n");
+		printf("Connected to the server\n");
 
 	// function for chat
 	func(socket_fd);
 
 	// close the socket
 	close(socket_fd);
+	printf("Exit program\n");
+
+	return 0;
 }

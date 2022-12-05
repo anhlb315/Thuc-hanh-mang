@@ -4,6 +4,8 @@
 #include "helper.h"
 #include "../exception/exception.h"
 #include "../account/account.h"
+#include <sys/socket.h>
+#include <unistd.h> // read(), write(), close()
 #define BUFFER_SIZE 1024
 
 int menu()
@@ -65,7 +67,7 @@ goal:
     return user_choice[0];
 }
 
-int exit()
+int exit_program()
 {
     char user_choice[BUFFER_SIZE];
 

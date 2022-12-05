@@ -1,4 +1,4 @@
 char welcome();
 int menu();
-int exit();
+int exit_program();
 int sign_up(int socket_fd);

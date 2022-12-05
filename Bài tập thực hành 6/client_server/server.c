@@ -13,6 +13,7 @@
 
 void func(int connect_fd)
 {
+    printf("Main function\n");
     return;
 }
 
@@ -41,7 +42,7 @@ int main(int argc, char *argv[])
     if (socket_fd == -1)
     {
         printf("Error: Socket creation failed\n");
-        exit(0);
+        return 0;
     }
     else
         printf("Socket successfully created\n");
@@ -56,7 +57,7 @@ int main(int argc, char *argv[])
     if ((bind(socket_fd, (struct sockaddr *)&server_address, sizeof(server_address))) != 0)
     {
         printf("Error: Socket bind failed\n");
-        exit(0);
+        return 0;
     }
     else
         printf("Socket successfully bind\n");
@@ -65,7 +66,7 @@ int main(int argc, char *argv[])
     if ((listen(socket_fd, 5)) != 0)
     {
         printf("Error: Listen failed\n");
-        exit(0);
+        return 0;
     }
     else
         printf("Server listening...\n");
@@ -76,7 +77,7 @@ int main(int argc, char *argv[])
     if (connect_fd < 0)
     {
         printf("Error: Server accept failed\n");
-        exit(0);
+        return 0;
     }
     else
         printf("Server accept the client_address\n");
@@ -88,4 +89,6 @@ int main(int argc, char *argv[])
     printf("Server is closing...\n");
     close(socket_fd);
     printf("Server's closed\n");
+
+    return 0;
 }
