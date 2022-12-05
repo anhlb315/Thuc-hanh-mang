@@ -11,9 +11,9 @@
 #define BUFFER_SIZE 1024
 #define PORT 8080
 
-void func(int connect_fd)
+void func(int connect_fd, int pid)
 {
-    printf("Main function\n");
+    printf("Hello from child %d\n", pid);
     return;
 }
 
@@ -31,11 +31,14 @@ int main(int argc, char *argv[])
     int port = atoi(port_number);
     int socket_fd, connect_fd, client_address_size;
     struct sockaddr_in server_address, client_address;
+    int pid;
+    int child_counter = 0;
 
-    if (port < 1 || port > 65535) {
-		printf("Error: Invalid port\n");
-		return 0;
-	}
+    if (port < 1 || port > 65535)
+    {
+        printf("Error: Invalid port\n");
+        return 0;
+    }
 
     // socket create and verification
     socket_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -73,17 +76,31 @@ int main(int argc, char *argv[])
     client_address_size = sizeof(client_address);
 
     // Accept the data packet from client_address and verification
-    connect_fd = accept(socket_fd, (struct sockaddr *)&client_address, &client_address_size);
-    if (connect_fd < 0)
+    while (1)
     {
-        printf("Error: Server accept failed\n");
-        return 0;
-    }
-    else
-        printf("Server accept the client_address\n");
+        connect_fd = accept(socket_fd, (struct sockaddr *)&client_address, &client_address_size);
+        if (connect_fd < 0)
+        {
+            printf("Error: Server accept failed\n");
+            return 0;
+        }
+        else
+            printf("Server accept the client_address\n");
 
-    // Function for chatting between client_address and server
-    func(connect_fd);
+        if((pid = fork()) == -1)
+        {
+            close(connect_fd);
+            continue;
+        }
+        else
+        {
+            printf("This is child %d\n", pid);
+            child_counter++;
+        }
+
+        // Function for chatting between client_address and server
+        func(connect_fd, pid);
+    }
 
     // After chatting close the socket
     printf("Server is closing...\n");
