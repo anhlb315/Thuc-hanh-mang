@@ -110,26 +110,25 @@ int main(int argc, char *argv[])
             inet_ntop(AF_INET, &client_address, client_address_str, INET_ADDRSTRLEN);
             printf("Server accept the client: %s\n", client_address_str);
         }
-        
-        switch (pid = fork())
+
+        if ((pid = fork()) == 0)
         {
-        case -1:
-            close(connect_fd);
-            break;
-        case 0:
             close(socket_fd);
             func(connect_fd);
             close(connect_fd);
             exit(0);
-            break;
-        default:
-            printf("pid: %d\n", pid);
-            pause();
-            break;
+        }
+        else if (pid > 0)
+        {
+            printf("Child %d created\n", pid);
+        }
+        else
+        {
+            printf("Failed to create child.\n");
         }
     }
 
-    // After chatting close the socket
+    // Close the socket
     printf("Server is closing...\n");
     close(socket_fd);
     printf("Server's closed\n");
