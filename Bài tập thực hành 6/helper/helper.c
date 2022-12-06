@@ -6,6 +6,9 @@
 #include "../account/account.h"
 #include <sys/socket.h>
 #include <unistd.h> // read(), write(), close()
+#include <signal.h>
+#include <sys/wait.h>
+#include <sys/resource.h>
 #define BUFFER_SIZE 1024
 
 int menu()
@@ -147,4 +150,20 @@ goal2:
     send(socket_fd, username, sizeof(username), 0);
     send(socket_fd, confirm_password, sizeof(confirm_password), 0);
     return 1;
+}
+
+void proc_exit()
+{
+    printf ("PID %d caught signal.\n", getpid());
+
+    // while (1)
+    // {
+    //     pid = wait3(&wstat, WNOHANG, (struct rusage *)NULL);
+    //     if (pid == 0)
+    //         return;
+    //     else if (pid == -1)
+    //         return;
+    //     else
+    //         printf("Return code: %d\n", wstat.w_retcode);
+    // }
 }

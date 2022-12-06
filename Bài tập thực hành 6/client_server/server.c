@@ -8,6 +8,8 @@
 #include <unistd.h> // read(), write(), close()
 #include "../exception/exception.h"
 #include "../account/account.h"
+#include "../helper/helper.h"
+#include <signal.h>
 #define BUFFER_SIZE 1024
 #define PORT 8080
 
@@ -90,6 +92,9 @@ int main(int argc, char *argv[])
         printf("Server listening...\n");
     client_address_size = sizeof(client_address);
 
+    // Handling SIGCHLD Signals
+    signal (SIGINT, proc_exit);
+
     // Accept the data packet from client_address and verification
     while (1)
     {
@@ -105,21 +110,20 @@ int main(int argc, char *argv[])
             printf("Server accept the client: %s\n", client_address_str);
         }
 
-        if ((pid = fork()) == -1)
+        switch (pid=fork())
         {
+        case -1:
             close(connect_fd);
-            continue;
-        }
-        else if (pid == 0)
-        {
-            // close(socket_fd);
+            break;
+        case 0:
             printf("pid: %d\n", pid);
             func(connect_fd);
             close(connect_fd);
-        }
-        else
-        {
+            break;
+        default:
             printf("pid: %d\n", pid);
+            pause();
+            break;
         }
     }
 
