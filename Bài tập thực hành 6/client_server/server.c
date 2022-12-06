@@ -19,13 +19,14 @@ void func(int connect_fd)
     char exit[BUFFER_SIZE] = "exit\0";
 
     // Chat
-    while(1)
+    while (1)
     {
         recv(connect_fd, message, sizeof(message), 0);
         standardize_input(message, sizeof(message));
-        
+
         // Check for exit
-        if (strcmp(message, exit) == 0) break;
+        if (strcmp(message, exit) == 0)
+            break;
 
         printf("> %s\n", message);
         bzero(message, sizeof(message));
@@ -93,7 +94,7 @@ int main(int argc, char *argv[])
     client_address_size = sizeof(client_address);
 
     // Handling SIGCHLD Signals
-    signal (SIGINT, proc_exit);
+    signal(SIGCHLD, sig_chld);
 
     // Accept the data packet from client_address and verification
     while (1)
@@ -109,16 +110,17 @@ int main(int argc, char *argv[])
             inet_ntop(AF_INET, &client_address, client_address_str, INET_ADDRSTRLEN);
             printf("Server accept the client: %s\n", client_address_str);
         }
-
-        switch (pid=fork())
+        
+        switch (pid = fork())
         {
         case -1:
             close(connect_fd);
             break;
         case 0:
-            printf("pid: %d\n", pid);
+            close(socket_fd);
             func(connect_fd);
             close(connect_fd);
+            exit(0);
             break;
         default:
             printf("pid: %d\n", pid);

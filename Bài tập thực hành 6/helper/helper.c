@@ -152,18 +152,10 @@ goal2:
     return 1;
 }
 
-void proc_exit()
+void sig_chld(int signo)
 {
-    printf ("PID %d caught signal.\n", getpid());
-
-    // while (1)
-    // {
-    //     pid = wait3(&wstat, WNOHANG, (struct rusage *)NULL);
-    //     if (pid == 0)
-    //         return;
-    //     else if (pid == -1)
-    //         return;
-    //     else
-    //         printf("Return code: %d\n", wstat.w_retcode);
-    // }
+    pid_t pid;
+    int stat;
+    pid = waitpid(-1, &stat, WNOHANG);
+    printf("Child %d terminated\n", pid);
 }

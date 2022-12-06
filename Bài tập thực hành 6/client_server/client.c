@@ -16,7 +16,7 @@ void func(int socket_fd)
 	char message[BUFFER_SIZE];
 	char exit[BUFFER_SIZE] = "exit\n\0";
 
-	while(1)
+	while (1)
 	{
 		printf("> ");
 		fgets(message, sizeof(message), stdin);
@@ -24,9 +24,7 @@ void func(int socket_fd)
 
 		// Check for exit
 		if (strcmp(message, exit) == 0)
-		{
 			break;
-		}
 	}
 	return;
 }
