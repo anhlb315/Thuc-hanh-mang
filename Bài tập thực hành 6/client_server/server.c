@@ -14,10 +14,17 @@
 void func(int connect_fd)
 {
     char message[BUFFER_SIZE];
+    char exit[BUFFER_SIZE] = "exit\0";
+
+    // Chat
     while(1)
     {
         recv(connect_fd, message, sizeof(message), 0);
         standardize_input(message, sizeof(message));
+        
+        // Check for exit
+        if (strcmp(message, exit) == 0) break;
+
         printf("> %s\n", message);
         bzero(message, sizeof(message));
     }

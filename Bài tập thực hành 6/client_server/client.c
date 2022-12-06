@@ -14,12 +14,19 @@
 void func(int socket_fd)
 {
 	char message[BUFFER_SIZE];
+	char exit[BUFFER_SIZE] = "exit\n\0";
 
 	while(1)
 	{
 		printf("> ");
 		fgets(message, sizeof(message), stdin);
 		send(socket_fd, message, sizeof(message), 0);
+
+		// Check for exit
+		if (strcmp(message, exit) == 0)
+		{
+			break;
+		}
 	}
 	return;
 }
