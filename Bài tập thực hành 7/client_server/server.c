@@ -11,6 +11,7 @@
 #include "../helper/helper.h"
 #include <signal.h>
 #include <pthread.h>
+#include <arpa/inet.h>
 #define BUFFER_SIZE 1024
 #define PORT 8080
 
