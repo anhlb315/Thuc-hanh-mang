@@ -9,6 +9,7 @@
 #include <signal.h>
 #include <sys/wait.h>
 #include <sys/resource.h>
+#include <pthread.h>
 #define BUFFER_SIZE 1024
 
 int menu()
@@ -152,10 +153,27 @@ goal2:
     return 1;
 }
 
-void sig_chld(int signo)
+void *client_handler(void *arg)
 {
-    pid_t pid;
-    int stat;
-    pid = waitpid(-1, &stat, WNOHANG);
-    printf("Child %d terminated\n", pid);
+    int client_fd;
+    char message[BUFFER_SIZE];
+    char exit[BUFFER_SIZE] = "exit\0";
+    pthread_detach(pthread_self());
+    client_fd = (int)arg;
+
+    // Chat
+    while (1)
+    {
+        recv(client_fd, message, sizeof(message), 0);
+        standardize_input(message, sizeof(message));
+
+        // Check for exit
+        if (strcmp(message, exit) == 0)
+            break;
+
+        printf("> %s\n", message);
+        bzero(message, sizeof(message));
+    }
+
+    close(client_fd);
 }

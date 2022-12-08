@@ -10,29 +10,9 @@
 #include "../account/account.h"
 #include "../helper/helper.h"
 #include <signal.h>
+#include <pthread.h>
 #define BUFFER_SIZE 1024
 #define PORT 8080
-
-void func(int connect_fd)
-{
-    char message[BUFFER_SIZE];
-    char exit[BUFFER_SIZE] = "exit\0";
-
-    // Chat
-    while (1)
-    {
-        recv(connect_fd, message, sizeof(message), 0);
-        standardize_input(message, sizeof(message));
-
-        // Check for exit
-        if (strcmp(message, exit) == 0)
-            break;
-
-        printf("> %s\n", message);
-        bzero(message, sizeof(message));
-    }
-    return;
-}
 
 // Driver function
 int main(int argc, char *argv[])
@@ -51,6 +31,7 @@ int main(int argc, char *argv[])
     int pid;
     int child_counter = 0;
     char client_address_str[BUFFER_SIZE];
+    pthread_t tid;
 
     if (port < 1 || port > 65535)
     {
@@ -93,9 +74,6 @@ int main(int argc, char *argv[])
         printf("Server listening...\n");
     client_address_size = sizeof(client_address);
 
-    // Handling SIGCHLD Signals
-    signal(SIGCHLD, sig_chld);
-
     // Accept the data packet from client_address and verification
     while (1)
     {
@@ -111,21 +89,7 @@ int main(int argc, char *argv[])
             printf("Server accept the client: %s\n", client_address_str);
         }
 
-        if ((pid = fork()) == 0)
-        {
-            close(socket_fd);
-            func(connect_fd);
-            close(connect_fd);
-            exit(0);
-        }
-        else if (pid > 0)
-        {
-            printf("Child %d created\n", pid);
-        }
-        else
-        {
-            printf("Failed to create child.\n");
-        }
+        pthread_create(&tid, NULL, &client_handler, (void *) connect_fd);
     }
 
     // Close the socket
