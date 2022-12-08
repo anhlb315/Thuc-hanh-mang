@@ -10,28 +10,130 @@
 #include "../account/account.h"
 #include "../helper/helper.h"
 #include <signal.h>
+#include <arpa/inet.h>
 #define BUFFER_SIZE 1024
 #define PORT 8080
 
+int split(char *buffer, char *only_number, char *only_string)
+{
+    // Only number in buffer converts to string only_number
+    strcpy(only_string, buffer);
+    int k = 0;
+    strcpy(only_number, buffer);
+    int j = 0;
+
+    // if number, copy to only_number
+    // if character, copy to only_string
+    int m = 0;
+    for (int i = 0; i < 100; i++)
+    {
+        char ch = only_number[i];
+        if (ch == '\0')
+            break;
+        if (ch >= '0' && ch <= '9')
+        {
+            only_number[j] = ch;
+            j++;
+        }
+        else if ((ch >= 'a' && ch <= 'z') || (ch == ' '))
+        {
+            only_string[k] = ch;
+            k++;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+    only_number[j] = '\0';
+    only_string[k] = '\0';
+    return 1;
+}
+
 void func(int connect_fd)
 {
-    char message[BUFFER_SIZE];
-    char exit[BUFFER_SIZE] = "exit\0";
+    int client_fd = connect_fd;
+    char username[BUFFER_SIZE];
+    char password[BUFFER_SIZE];
+    int n;
+    char sign_in_feedback[BUFFER_SIZE];
+    Account *acc = NULL;
+    acc = read_account(acc);
+    int feedback;
+    int password_incorrect_times = 3;
+    char bye[100] = "bye\0";
+    char is_password_changing[BUFFER_SIZE];
+    char only_number[BUFFER_SIZE];
+    char only_string[BUFFER_SIZE];
+    char exit_program[100] = "exit_program\0";
 
     // Chat
     while (1)
     {
-        recv(connect_fd, message, sizeof(message), 0);
-        standardize_input(message, sizeof(message));
+        // Clean buffers
+        bzero(username, sizeof(username));
+        bzero(password, sizeof(password));
 
-        // Check for exit
-        if (strcmp(message, exit) == 0)
+        // Receive username & password from client
+        read(client_fd, username, sizeof(username));
+        read(client_fd, password, sizeof(password));
+
+        // Standardize strings
+        standardize_input(username, sizeof(username));
+        standardize_input(password, sizeof(password));
+
+        // Check for exit program
+        if (strcmp(exit_program, username) == 0)
             break;
 
-        printf("> %s\n", message);
-        bzero(message, sizeof(message));
+        // Print username & password
+        printf("Username: %s\n", username);
+        printf("Password: %s\n", password);
+
+        // Sign in
+        feedback = sign_in(acc, username, password);
+        if (feedback == 3) // If wrong password
+        {
+            password_incorrect_times--;
+            if (password_incorrect_times == 0)
+            {
+                change_current_account_status(acc, username, 2);
+
+                feedback++; // 4 mean account is blocked
+            }
+        }
+
+        sprintf(sign_in_feedback, "%d", feedback);
+        write(client_fd, sign_in_feedback, sizeof(sign_in_feedback));
+
+        if (feedback == 0) // If signed in
+        {
+            read(client_fd, is_password_changing, sizeof(is_password_changing));
+            standardize_input(is_password_changing, sizeof(is_password_changing));
+
+            if (strcmp(bye, is_password_changing) == 0)
+            {
+                if (sign_out(acc, username))
+                {
+                    write(client_fd, bye, sizeof(bye));
+                }
+            }
+            else if (strlen(is_password_changing) > 1)
+            {
+                if (change_password(acc, username, is_password_changing))
+                {
+                    write(client_fd, sign_in_feedback, sizeof(sign_in_feedback));
+                }
+                if (split(is_password_changing, only_number, only_string))
+                {
+                    write(client_fd, only_number, sizeof(only_number));
+                    write(client_fd, only_string, sizeof(only_string));
+                }
+            }
+        }
+
+        printf("---------------------\n");
     }
-    return;
 }
 
 // Driver function
