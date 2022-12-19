@@ -46,7 +46,7 @@ void func(int socket_fd)
 		}
 	goal1:
 		printf("Password: ");
-		if (fgets(password, sizeof(username), stdin) == NULL)
+		if (fgets(password, sizeof(password), stdin) == NULL)
 			break;
 
 		// Check for '\n' input
@@ -76,7 +76,7 @@ void func(int socket_fd)
 			printf("OK.\n");
 			printf("------------------\n");
 		goal2:
-			printf("Do you want to change password or sign out?(y/n/bye): ");
+			printf("Do you want to change password?(y/n/bye): ");
 			if (fgets(choice, BUFFER_SIZE, stdin) == NULL)
 				break;
 
