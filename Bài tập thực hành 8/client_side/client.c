@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <unistd.h> // read(), write(), close()
 #include <errno.h>
+#include "client_app/client_app.h"
 
 int main(int argc, char *argv[])
 {
@@ -66,7 +67,7 @@ int main(int argc, char *argv[])
 		printf("[+]Connected to the server\n");
 
 	// Main function
-	// client_app(socket_fd);
+	app(socket_fd);
 
 	// Close socket
 	close(socket_fd);
