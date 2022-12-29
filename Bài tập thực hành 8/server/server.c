@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/select.h>
 #include <unistd.h> // read(), write(), close()
 #include <pthread.h>
 #include <errno.h>
@@ -25,6 +26,8 @@ int main(int argc, char *argv[])
     int socket_fd, connect_fd, len = sizeof(client_address);
     bzero(&server_address, sizeof(server_address));
     bzero(&client_address, sizeof(client_address));
+    fd_set current_sockets, ready_sockets;
+    int socket_count = 0;
 
     if (port < 1 || port > 65535)
     {
@@ -65,16 +68,48 @@ int main(int argc, char *argv[])
     else
         printf("[+]Server listening\n");
 
+    // Initialize current set
+    FD_ZERO(&current_sockets);
+    FD_SET(socket_fd, &current_sockets);
+    socket_count = socket_fd + 1;
+
     while (1)
     {
-        // Accept the data packet from client_address and verification
-        connect_fd = accept(socket_fd, (struct sockaddr *)&client_address, &len);
-        if (connect_fd < 0)
+        // Because select is destructive
+        ready_sockets = current_sockets;
+
+        if (select(socket_count, &ready_sockets, NULL, NULL, NULL) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return 0;
         }
-        else
-            printf("[+]Server accept the client_address\n");
+
+        for (int i = 0; i < socket_count; i++)
+        {
+            if (FD_ISSET(i, &ready_sockets))
+            {
+                if (i == socket_fd)
+                {
+                    // There is a new connection that we can accept
+                    connect_fd = accept(socket_fd, (struct sockaddr *)&client_address, &len);
+                    if (connect_fd < 0)
+                    {
+                        fprintf(stderr, "[-]%s\n", strerror(errno));
+                        return 0;
+                    }
+                    else
+                    {
+                        printf("[+]Server accept the client_address\n");
+                        FD_SET(connect_fd, &current_sockets);
+                    }
+                }
+                else
+                {
+                    // Read for client socket
+                    // todo()
+                    FD_CLR(i, &current_sockets);
+                }
+            }
+        }
     }
 }
