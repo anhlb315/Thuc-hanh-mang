@@ -33,6 +33,7 @@ int main(int argc, char *argv[])
     char feedback[BUFFER_SIZE];
     Account *acc = NULL;
     acc = read_account(acc);
+    Account current_user;
 
     if (port < 1 || port > 65535)
     {
@@ -142,10 +143,14 @@ int main(int argc, char *argv[])
                             {
                             case 0:
                                 printf("[+]Sign in\n");
-                                sign_in(i, acc);
+                                sign_in(i, acc, &current_user);
                                 break;
                             case 1:
-                                // sign_in(i);
+                                printf("[+]Change password\n");
+                                change_password(i, acc, &current_user);
+                                break;
+                            case 2:
+                                printf("[+]Exit program\n");
                                 break;
                             default:
                                 printf("[-]Something wrong with server\n");

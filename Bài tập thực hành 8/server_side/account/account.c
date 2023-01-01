@@ -342,7 +342,7 @@ void activate(Account *acc)
     return;
 }
 
-int change_password(Account *acc, char* username, char* new_password)
+int account_change_password(Account *acc, char* username, char* new_password)
 {
     int success = 0;
     Account *cur = acc;

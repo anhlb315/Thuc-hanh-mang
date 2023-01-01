@@ -272,13 +272,121 @@ int sign_in(int socket_fd)
     return 0;
 }
 
+void change_password(int socket_fd)
+{
+    // Variables
+    char change_password_signal[BUFFER_SIZE] = "1\0";
+    char server_feedback[BUFFER_SIZE];
+    char new_password[BUFFER_SIZE], confirm_password[BUFFER_SIZE];
+    char only_number[BUFFER_SIZE], only_string[BUFFER_SIZE];
+
+    // Send signal to server
+    if (send(socket_fd, change_password_signal, sizeof(change_password_signal), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
+    }
+
+    // Recv server's feedback
+    if (recv(socket_fd, server_feedback, sizeof(server_feedback), MSG_WAITALL) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
+    }
+    else
+    {
+    new_password:
+        printf("[+]New password: ");
+        if (fgets(new_password, BUFFER_SIZE, stdin) == NULL)
+            return;
+
+        // Check new_password
+        if (check_new_password(new_password))
+        {
+            printf("[-]Can only contains number or letter. Try again please.\n");
+            goto new_password;
+        }
+
+    confirm_password:
+        printf("[+]Confirm password: ");
+        if (fgets(confirm_password, BUFFER_SIZE, stdin) == NULL)
+            return;
+
+        // Check confirm_password
+        if (check_confirm_password(confirm_password, new_password))
+        {
+            goto confirm_password;
+        }
+
+        // Send new password to Server
+        if (send(socket_fd, confirm_password, sizeof(confirm_password), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+
+        // Recv server's feedback
+        if (recv(socket_fd, server_feedback, sizeof(server_feedback), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+        else if (atoi(server_feedback) == 0)
+        {
+            if (recv(socket_fd, only_number, sizeof(only_number), 0) < 0)
+            {
+                fprintf(stderr, "[-]%s\n", strerror(errno));
+                return;
+            }
+            if (recv(socket_fd, only_string, sizeof(only_string), 0) < 0)
+            {
+                fprintf(stderr, "[-]%s\n", strerror(errno));
+                return;
+            }
+
+            printf("[+]Encoded password: %s %s\n", only_number, only_string);
+            printf("[+]Change password successfully.\n");
+        }
+    }
+
+    return;
+}
+
 void app(int socket_fd)
 {
+    // Variables
+    char choice[BUFFER_SIZE];
+    char bye[BUFFER_SIZE] = "bye\n\0";
+
     while (1)
     {
         if (sign_in(socket_fd))
         {
-            // change_password(socket_fd);
+            printf("[+]Do you want to change password?(y/n/bye): ");
+        choice:
+            if (fgets(choice, BUFFER_SIZE, stdin) == NULL)
+                return;
+
+            if (choice[0] != 121 && choice[0] != 110 && !(strcmp(choice, bye) == 0))
+            {
+                printf("[-]Wrong input. Only y or n.\n");
+                goto choice;
+            }
+
+            if (choice[0] == 121)
+            {
+                change_password(socket_fd);
+            }
+            else if (choice[0] == 110)
+            {
+                continue;
+            }
+            else
+            {
+                // if (exit_program(socket_fd))
+                // {
+                //     printf("[+]Sign out successfully.\n");
+                // }
+            }
         }
     }
-}

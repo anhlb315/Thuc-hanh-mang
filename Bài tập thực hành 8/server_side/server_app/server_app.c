@@ -129,7 +129,7 @@ int split(char *buffer, char *only_number, char *only_string)
 //     close(client_fd);
 // }
 
-void sign_in(int client_fd, Account* acc)
+void sign_in(int client_fd, Account *acc, Account *current_user)
 {
     // Variables
     User user;
@@ -166,10 +166,50 @@ void sign_in(int client_fd, Account* acc)
 
     // Send feedback to Client
     sprintf(sign_in_feedback, "%d", feedback);
-    if(send(client_fd, sign_in_feedback, sizeof(sign_in_feedback), 0) < 0)
+    if (send(client_fd, sign_in_feedback, sizeof(sign_in_feedback), 0) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return;
+    }
+    else
+    {
+        strcpy(current_user->username, user.username);
+        strcpy(current_user->password, user.password);
+    }
+
+    return;
+}
+
+void change_password(int client_fd, Account *acc, Account *current_user)
+{
+    // Variables
+    char new_password[BUFFER_SIZE];
+    char bye[100] = "bye\0";
+    char only_number[BUFFER_SIZE], only_string[BUFFER_SIZE];
+    char feedback[BUFFER_SIZE];
+
+    // Recv new password from Client
+    if (recv(client_fd, new_password, sizeof(new_password), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
+    }
+    else
+    {
+        standardize_input(new_password, sizeof(new_password));
+        if (account_change_password(acc, current_user->username, new_password))
+        {
+            if (send(client_fd, feedback, sizeof(feedback), 0) < 0)
+            {
+                fprintf(stderr, "[-]%s\n", strerror(errno));
+                return;
+            }
+        }
+        if (split(new_password, only_number, only_string))
+        {
+            send(client_fd, only_number, sizeof(only_number), 0);
+            send(client_fd, only_string, sizeof(only_string), 0);
+        }
     }
 
     return;
