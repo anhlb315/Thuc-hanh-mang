@@ -87,36 +87,34 @@ int main(int argc, char *argv[])
             return 0;
         }
 
+        if (FD_ISSET(socket_fd, &read_sockets))
+        {
+            // There is a new connection that we can accept
+            connect_fd = accept(socket_fd, (struct sockaddr *)&client_address, &len);
+            if (connect_fd < 0)
+            {
+                fprintf(stderr, "[-]%s\n", strerror(errno));
+                return 0;
+            }
+            else
+            {
+                printf("[+]Server accept the client_address\n");
+                FD_SET(connect_fd, &current_sockets);
+                if (connect_fd > socket_count)
+                {
+                    socket_count = connect_fd + 1;
+                }
+            }
+        }
+
         for (int i = 0; i <= socket_count; i++)
         {
-            if (FD_ISSET(i, &read_sockets))
+            if (FD_ISSET(i, &write_sockets))
             {
-                if (i == socket_fd)
-                {
-                    // There is a new connection that we can accept
-                    connect_fd = accept(socket_fd, (struct sockaddr *)&client_address, &len);
-                    if (connect_fd < 0)
-                    {
-                        fprintf(stderr, "[-]%s\n", strerror(errno));
-                        return 0;
-                    }
-                    else
-                    {
-                        printf("[+]Server accept the client_address\n");
-                        FD_SET(connect_fd, &current_sockets);
-                        if (connect_fd > socket_count)
-                        {
-                            socket_count = connect_fd + 1;
-                        }
-                    }
-                }
-                else
-                {
-                    // Read for client socket
-                    printf("[+]Read for client socket\n");
-                    app(i);
-                    FD_CLR(i, &current_sockets);
-                }
+                // Read for client socket
+                printf("[+]Read for client socket\n");
+                app(i);
+                FD_CLR(i, &current_sockets);
             }
         }
     }

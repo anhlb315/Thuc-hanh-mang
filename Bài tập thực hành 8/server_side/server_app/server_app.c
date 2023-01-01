@@ -79,7 +79,7 @@ void app(int client_fd)
 
         // Print username & password
         printf("[+]Username: %s\n", user.username);
-        printf("[-]Password: %s\n", user.password);
+        printf("[+]Password: %s\n", user.password);
 
         // Sign in
         feedback = sign_in(acc, user.username, user.password);

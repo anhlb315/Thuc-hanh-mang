@@ -99,10 +99,10 @@ Account *read_account(Account *acc)
     char homepage[100];
     int status;
     number_of_account = 0;
-    FILE *inp = fopen("data/nguoidung.txt", "r");
+    FILE *inp = fopen("server_side/data/nguoidung.txt", "r");
     if (!inp)
     {
-        printf("Error: Can't open this file! \n");
+        printf("[-]Error: Can't open this file! \n");
         return NULL;
     }
 
@@ -151,7 +151,7 @@ Account *register_account(Account *acc)
 
 void update_file(Account *acc)
 {
-    FILE *inp = fopen("data/nguoidung.txt", "w+");
+    FILE *inp = fopen("server_side/data/nguoidung.txt", "w+");
     if(inp==NULL){
         printf("Cannot open file.\n");
         return;
