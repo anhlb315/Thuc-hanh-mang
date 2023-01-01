@@ -85,6 +85,7 @@ int main(int argc, char *argv[])
         read_sockets = current_sockets;
         write_sockets = current_sockets;
 
+        printf("[+]Socket count: %d\n", socket_count);
         if (select(socket_count, &read_sockets, &write_sockets, NULL, NULL) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
@@ -151,14 +152,13 @@ int main(int argc, char *argv[])
                                 break;
                             case 2:
                                 printf("[+]Exit program\n");
+                                // Clear client_fd out of current_sockets
+                                FD_CLR(i, &current_sockets);
                                 break;
                             default:
                                 printf("[-]Something wrong with server\n");
                                 break;
                             }
-
-                            // Clear client_fd out of current_sockets
-                            FD_CLR(i, &current_sockets);
                         }
                     }
                 }
