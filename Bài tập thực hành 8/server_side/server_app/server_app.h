@@ -1,3 +1,4 @@
+#include "../account/account.h"
 #define BUFFER_SIZE 1024
 
-void app(int client_fd);
+void sign_in(int, Account*);

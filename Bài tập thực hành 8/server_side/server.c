@@ -29,6 +29,10 @@ int main(int argc, char *argv[])
     bzero(&client_address, sizeof(client_address));
     fd_set current_sockets, read_sockets, write_sockets, exception_sockets;
     int socket_count = 0;
+    char signal[BUFFER_SIZE];
+    char feedback[BUFFER_SIZE];
+    Account *acc = NULL;
+    acc = read_account(acc);
 
     if (port < 1 || port > 65535)
     {
@@ -86,35 +90,73 @@ int main(int argc, char *argv[])
             return 0;
         }
 
-        if (FD_ISSET(socket_fd, &read_sockets))
-        {
-            // There is a new connection that we can accept
-            connect_fd = accept(socket_fd, (struct sockaddr *)&client_address, &len);
-            if (connect_fd < 0)
-            {
-                fprintf(stderr, "[-]%s\n", strerror(errno));
-                return 0;
-            }
-            else
-            {
-                printf("[+]Server accept the client_address\n");
-                FD_SET(connect_fd, &current_sockets);
-                if (connect_fd > socket_count)
-                {
-                    socket_count = connect_fd + 1;
-                }
-                continue;
-            }
-        }
-
         for (int i = 0; i <= socket_count; i++)
         {
-            if (FD_ISSET(i, &write_sockets))
+            if (FD_ISSET(i, &read_sockets))
             {
-                // Read for client socket
-                printf("[+]Read from client socket\n");
-                app(i);
-                FD_CLR(i, &current_sockets);
+                if (i == socket_fd)
+                {
+                    // There is a new connection that we can accept
+                    connect_fd = accept(socket_fd, (struct sockaddr *)&client_address, &len);
+                    if (connect_fd < 0)
+                    {
+                        fprintf(stderr, "[-]%s\n", strerror(errno));
+                        return 0;
+                    }
+                    else
+                    {
+                        printf("[+]Server accept the client_address\n");
+                        FD_SET(connect_fd, &current_sockets);
+                        if (connect_fd > socket_count)
+                        {
+                            socket_count = connect_fd + 1;
+                        }
+                    }
+                }
+                else
+                {
+                    // Recv client's signal
+                    if (recv(i, signal, sizeof(signal), MSG_WAITALL) < 0)
+                    {
+                        fprintf(stderr, "[-]%s\n", strerror(errno));
+                        // Send feedback to Client
+                        sprintf(feedback, "%d", 0);
+                        if (send(i, feedback, sizeof(feedback), 0) < 0)
+                        {
+                            fprintf(stderr, "[-]%s\n", strerror(errno));
+                        }
+                        break;
+                    }
+                    else
+                    {
+                        // Send feedback to Client
+                        sprintf(feedback, "%d", 1);
+                        if (send(i, feedback, sizeof(feedback), 0) < 0)
+                        {
+                            fprintf(stderr, "[-]%s\n", strerror(errno));
+                            break;
+                        }
+                        else
+                        {
+                            switch (atoi(signal))
+                            {
+                            case 0:
+                                printf("[+]Sign in\n");
+                                sign_in(i, acc);
+                                break;
+                            case 1:
+                                // sign_in(i);
+                                break;
+                            default:
+                                printf("[-]Something wrong with server\n");
+                                break;
+                            }
+
+                            // Clear client_fd out of current_sockets
+                            FD_CLR(i, &current_sockets);
+                        }
+                    }
+                }
             }
         }
     }
