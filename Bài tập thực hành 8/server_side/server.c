@@ -9,6 +9,7 @@
 #include <unistd.h> // read(), write(), close()
 #include <pthread.h>
 #include <errno.h>
+#include "server_app/server_app.h"
 #define BUFFER_SIZE 1024
 
 int main(int argc, char *argv[])
@@ -106,7 +107,7 @@ int main(int argc, char *argv[])
                 else
                 {
                     // Read for client socket
-                    // todo()
+                    app(i);
                     FD_CLR(i, &current_sockets);
                 }
             }
