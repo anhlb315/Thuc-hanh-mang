@@ -79,9 +79,8 @@ int main(int argc, char *argv[])
         // Because select is destructive
         read_sockets = current_sockets;
         write_sockets = current_sockets;
-        exception_sockets = current_sockets;
 
-        if (select(socket_count, &read_sockets, &write_sockets, &exception_sockets, NULL) < 0)
+        if (select(socket_count, &read_sockets, &write_sockets, NULL, NULL) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return 0;
@@ -104,6 +103,7 @@ int main(int argc, char *argv[])
                 {
                     socket_count = connect_fd + 1;
                 }
+                continue;
             }
         }
 
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
             if (FD_ISSET(i, &write_sockets))
             {
                 // Read for client socket
-                printf("[+]Read for client socket\n");
+                printf("[+]Read from client socket\n");
                 app(i);
                 FD_CLR(i, &current_sockets);
             }
