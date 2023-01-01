@@ -7,6 +7,7 @@
 #include <strings.h> // bzero()
 #include <sys/socket.h>
 #include <unistd.h> // read(), write(), close()
+#include "../exception/exception.h"
 #define BUFFER_SIZE 1024
 
 void app(int socket_fd)

@@ -8,7 +8,7 @@ do
 
     clear
 
-    ./server 8880 &
+    ./server 8888 &
 
     sleep 604,800
 
