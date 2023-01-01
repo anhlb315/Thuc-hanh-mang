@@ -124,8 +124,16 @@ void change_password(int client_fd, Account *acc, Account *current_user)
         }
         if (split(new_password, only_number, only_string))
         {
-            send(client_fd, only_number, sizeof(only_number), 0);
-            send(client_fd, only_string, sizeof(only_string), 0);
+            if (send(client_fd, only_number, sizeof(only_number), 0) < 0)
+            {
+                fprintf(stderr, "[-]%s\n", strerror(errno));
+                return;
+            }
+            if (send(client_fd, only_string, sizeof(only_string), 0) < 0)
+            {
+                fprintf(stderr, "[-]%s\n", strerror(errno));
+                return;
+            }
         }
     }
 
