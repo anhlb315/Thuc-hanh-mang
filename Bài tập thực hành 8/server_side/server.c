@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     int socket_fd, connect_fd, len = sizeof(client_address);
     bzero(&server_address, sizeof(server_address));
     bzero(&client_address, sizeof(client_address));
-    fd_set current_sockets, ready_sockets;
+    fd_set current_sockets, read_sockets, write_sockets, exception_sockets;
     int socket_count = 0;
 
     if (port < 1 || port > 65535)
@@ -77,17 +77,19 @@ int main(int argc, char *argv[])
     while (1)
     {
         // Because select is destructive
-        ready_sockets = current_sockets;
+        read_sockets = current_sockets;
+        write_sockets = current_sockets;
+        exception_sockets = current_sockets;
 
-        if (select(socket_count, &ready_sockets, NULL, NULL, NULL) < 0)
+        if (select(socket_count, &read_sockets, &write_sockets, &exception_sockets, NULL) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return 0;
         }
 
-        for (int i = 0; i < socket_count; i++)
+        for (int i = 0; i <= socket_count; i++)
         {
-            if (FD_ISSET(i, &ready_sockets))
+            if (FD_ISSET(i, &read_sockets))
             {
                 if (i == socket_fd)
                 {
@@ -102,11 +104,16 @@ int main(int argc, char *argv[])
                     {
                         printf("[+]Server accept the client_address\n");
                         FD_SET(connect_fd, &current_sockets);
+                        if (connect_fd > socket_count)
+                        {
+                            socket_count = connect_fd + 1;
+                        }
                     }
                 }
                 else
                 {
                     // Read for client socket
+                    printf("[+]Read for client socket\n");
                     app(i);
                     FD_CLR(i, &current_sockets);
                 }
