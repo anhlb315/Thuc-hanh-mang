@@ -115,6 +115,7 @@ void change_password(int client_fd, Account *acc)
         if (feedback)
         {
             printf("[+]Change password successfully\n");
+            current_user_get_info(acc, user.username);
         }
         else
         {

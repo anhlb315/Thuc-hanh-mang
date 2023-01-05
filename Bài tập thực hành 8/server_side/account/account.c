@@ -152,11 +152,12 @@ Account *register_account(Account *acc)
 void update_file(Account *acc)
 {
     FILE *inp = fopen("data/nguoidung.txt", "w+");
-    if(inp==NULL){
+    if (inp == NULL)
+    {
         printf("Cannot open file.\n");
         return;
     }
-    
+
     Account *cur = acc;
     while (cur != NULL)
     {
@@ -234,7 +235,7 @@ void search(Account *acc)
     return;
 }
 
-int sign_out(Account *acc, char* username)
+int sign_out(Account *acc, char *username)
 {
     if (check_user(acc, username) != 0)
     {
@@ -342,7 +343,7 @@ void activate(Account *acc)
     return;
 }
 
-int account_change_password(Account *acc, char* username, char* new_password)
+int account_change_password(Account *acc, char *username, char *new_password)
 {
     int success = 0;
     Account *cur = acc;
@@ -371,5 +372,23 @@ void change_current_account_status(Account *acc, char *username, int status)
         cur = cur->next;
     }
     update_file(acc);
+    return;
+}
+
+void current_user_get_info(Account *acc, char *username)
+{
+    Account *cur = acc;
+    while (cur != NULL)
+    {
+        if (strcmp(cur->username, username) == 0)
+        {
+            printf("[+]Current user's name: %s\n", cur->username);
+            printf("[+]Current user's password: %s\n", cur->password);
+            printf("[+]Current user's homepage: %s\n", cur->homepage);
+            printf("[+]Current user's status: %d\n", cur->status);
+            printf("[+]Current user's sign in status: %d\n", cur->is_signed_in);
+        }
+        cur = cur->next;
+    }
     return;
 }

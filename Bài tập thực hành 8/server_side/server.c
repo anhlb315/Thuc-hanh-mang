@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     int socket_fd, connect_fd, len = sizeof(client_address);
     bzero(&server_address, sizeof(server_address));
     bzero(&client_address, sizeof(client_address));
-    fd_set current_sockets, read_sockets, write_sockets, exception_sockets;
+    fd_set current_sockets, read_sockets;
     int socket_count = 0;
     char signal[BUFFER_SIZE];
     char feedback[BUFFER_SIZE];
@@ -82,10 +82,9 @@ int main(int argc, char *argv[])
     {
         // Because select is destructive
         read_sockets = current_sockets;
-        write_sockets = current_sockets;
 
         printf("[+]Socket count: %d\n", socket_count);
-        if (select(socket_count, &read_sockets, &write_sockets, NULL, NULL) < 0)
+        if (select(socket_count, &read_sockets, NULL, NULL, NULL) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return 0;
