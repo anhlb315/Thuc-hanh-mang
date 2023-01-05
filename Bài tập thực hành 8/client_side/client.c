@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 
 	// Close socket
 	close(socket_fd);
-	printf("[+]Exit program\n");
+	printf("[+]Socket's closed\n");
 	
 	return 0;
 }

@@ -202,10 +202,10 @@ int change_password(int socket_fd, User *current_user)
             standardize_input(server_feedback, sizeof(server_feedback));
             switch (atoi(server_feedback))
             {
-            case 0:
+            case 1:
                 printf("[+]Change password successfully.\n");
                 break;
-            case 1:
+            case 0:
                 printf("[-]Fail to change password\n");
                 return 0;
             default:
