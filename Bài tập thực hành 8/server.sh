@@ -2,6 +2,8 @@
 
 while :
 do
+    cd server_side
+    
     make clean
 
     make
@@ -9,6 +11,8 @@ do
     clear
 
     ./server 8888 &
+
+    cd ..
 
     sleep 604,800
 
