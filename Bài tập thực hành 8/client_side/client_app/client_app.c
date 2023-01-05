@@ -10,7 +10,7 @@
 #include <errno.h>
 #include "../exception/exception.h"
 
-int sign_in(int socket_fd, User* current_user)
+int sign_in(int socket_fd, User *current_user)
 {
     // Variables
     char sign_in_signal[BUFFER_SIZE] = "0\0";
@@ -102,20 +102,20 @@ int sign_in(int socket_fd, User* current_user)
                     break;
                 case 1:
                     printf("[-]Cannot find account\n");
-                    break;
+                    return 0;
                 case 2:
                     printf("[-]Account is not ready\n");
-                    break;
+                    return 0;
                 case 3:
                     printf("[-]Not OK\n");
-                    break;
+                    return 0;
                 case 4:
                     printf("[-]Not OK\n");
                     printf("[-]Account is blocked\n");
-                    break;
+                    return 0;
                 default:
                     printf("[-]Something wrong with server\n");
-                    break;
+                    return 0;
                 }
             }
         }
@@ -128,7 +128,7 @@ int sign_in(int socket_fd, User* current_user)
     return 1;
 }
 
-void change_password(int socket_fd, User current_user)
+int change_password(int socket_fd, User *current_user)
 {
     // Variables
     char change_password_signal[BUFFER_SIZE] = "1\0";
@@ -140,21 +140,24 @@ void change_password(int socket_fd, User current_user)
     if (send(socket_fd, change_password_signal, sizeof(change_password_signal), 0) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
-        return;
+        return 0;
     }
 
     // Recv server's feedback
     if (recv(socket_fd, server_feedback, sizeof(server_feedback), MSG_WAITALL) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
-        return;
+        return 0;
     }
     else
     {
     new_password:
         printf("[+]New password: ");
-        if (fgets(new_password, BUFFER_SIZE, stdin) == NULL)
-            return;
+        if (fgets(new_password, sizeof(new_password), stdin) == NULL)
+        {
+            printf("[-]Error: fgets\n");
+            return 0;
+        }
 
         // Check new_password
         if (check_new_password(new_password))
@@ -165,8 +168,11 @@ void change_password(int socket_fd, User current_user)
 
     confirm_password:
         printf("[+]Confirm password: ");
-        if (fgets(confirm_password, BUFFER_SIZE, stdin) == NULL)
-            return;
+        if (fgets(confirm_password, sizeof(confirm_password), stdin) == NULL)
+        {
+            printf("[-]Error: fgets\n");
+            return 0;
+        }
 
         // Check confirm_password
         if (check_confirm_password(confirm_password, new_password))
@@ -174,38 +180,42 @@ void change_password(int socket_fd, User current_user)
             goto confirm_password;
         }
 
-        // Send new password to Server
-        if (send(socket_fd, confirm_password, sizeof(confirm_password), 0) < 0)
+        // Change current user password
+        strcpy(current_user->password, confirm_password);
+
+        // Send User with new password to Server
+        if (send(socket_fd, current_user, sizeof(struct _user), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
-            return;
+            return 0;
         }
 
         // Recv server's feedback
         if (recv(socket_fd, server_feedback, sizeof(server_feedback), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
-            return;
+            return 0;
         }
-        else if (atoi(server_feedback) == 0)
+        else
         {
-            if (recv(socket_fd, only_number, sizeof(only_number), 0) < 0)
+            // Handling server's feedback
+            standardize_input(server_feedback, sizeof(server_feedback));
+            switch (atoi(server_feedback))
             {
-                fprintf(stderr, "[-]%s\n", strerror(errno));
-                return;
+            case 0:
+                printf("[+]Change password successfully.\n");
+                break;
+            case 1:
+                printf("[-]Fail to change password\n");
+                return 0;
+            default:
+                printf("[-]Something wrong with server\n");
+                return 0;
             }
-            if (recv(socket_fd, only_string, sizeof(only_string), 0) < 0)
-            {
-                fprintf(stderr, "[-]%s\n", strerror(errno));
-                return;
-            }
-
-            printf("[+]Encoded password: %s %s\n", only_number, only_string);
-            printf("[+]Change password successfully.\n");
         }
     }
 
-    return;
+    return 1;
 }
 
 int sign_out(int socket_fd, User current_user)
@@ -256,10 +266,10 @@ int sign_out(int socket_fd, User current_user)
                     break;
                 case 1:
                     printf("[-]Sign out failed\n");
-                    break;
+                    return 0;
                 default:
                     printf("[-]Something wrong with server\n");
-                    break;
+                    return 0;
                 }
             }
         }
@@ -320,10 +330,10 @@ int exit_program(int socket_fd, User current_user)
                     break;
                 case 1:
                     printf("[-]Sign out failed\n");
-                    break;
+                    return 0;
                 default:
                     printf("[-]Something wrong with server\n");
-                    break;
+                    return 0;
                 }
             }
         }
@@ -350,27 +360,44 @@ void app(int socket_fd)
             printf("[+]Do you want to change password?(y/n/bye): ");
         choice:
             if (fgets(choice, BUFFER_SIZE, stdin) == NULL)
+            {
+                printf("[-]Error: fgets\n");
                 return;
+            }
 
-            if (choice[0] != 121 && choice[0] != 110 && !(strcmp(choice, bye) == 0))
+            if (choice[0] != 'y' && choice[0] != 'n' && !(strcmp(choice, bye) == 0))
             {
                 printf("[-]Wrong input. Only y or n.\n");
                 goto choice;
             }
 
-            if (choice[0] == 121)
+            if (choice[0] == 'y')
             {
-                change_password(socket_fd, current_user);
+                if (!change_password(socket_fd, &current_user))
+                {
+                    printf("[-]Error: change_password\n");
+                    return;
+                }
             }
-            else if (choice[0] == 110)
+            else if (choice[0] == 'n')
             {
-                sign_out(socket_fd, current_user);
+                if(!sign_out(socket_fd, current_user))
+                {
+                    printf("[-]Error: sign_out\n");
+                    return;
+                }
             }
             else
             {
-                if(exit_program(socket_fd, current_user))
+                if (exit_program(socket_fd, current_user))
                 {
                     printf("[+]Exit program\n");
+                    return;
+                }
+                else
+                {
+                    printf("[-]Fail to exit program\n");
+                    return;
                 }
             }
         }
