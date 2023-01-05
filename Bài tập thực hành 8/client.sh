@@ -7,5 +7,6 @@ else
     make clean
     make
     clear
-    ./client 127.0.0.1 8888
+    echo "[+]Port: $1"
+    ./client 127.0.0.1 $1
 fi
