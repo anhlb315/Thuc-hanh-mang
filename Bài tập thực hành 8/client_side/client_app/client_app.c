@@ -10,7 +10,7 @@
 #include <errno.h>
 #include "../exception/exception.h"
 
-int sign_in(int socket_fd)
+int sign_in(int socket_fd, User* current_user)
 {
     // Variables
     char sign_in_signal[BUFFER_SIZE] = "0\0";
@@ -96,6 +96,8 @@ int sign_in(int socket_fd)
                 switch (atoi(server_feedback))
                 {
                 case 0:
+                    strcpy(user.username, username);
+                    strcpy(user.password, password);
                     printf("[+]OK\n");
                     break;
                 case 1:
@@ -126,7 +128,7 @@ int sign_in(int socket_fd)
     return 1;
 }
 
-void change_password(int socket_fd)
+void change_password(int socket_fd, User current_user)
 {
     // Variables
     char change_password_signal[BUFFER_SIZE] = "1\0";
@@ -206,15 +208,144 @@ void change_password(int socket_fd)
     return;
 }
 
+int sign_out(int socket_fd, User current_user)
+{
+    // Variables
+    char sign_out_signal[BUFFER_SIZE] = "2\0";
+    char server_feedback[BUFFER_SIZE];
+
+    // Send signal to server
+    if (send(socket_fd, sign_out_signal, sizeof(sign_out_signal), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 0;
+    }
+
+    // Recv server's feedback
+    if (recv(socket_fd, server_feedback, sizeof(server_feedback), MSG_WAITALL) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 0;
+    }
+    else
+    {
+        standardize_input(server_feedback, sizeof(server_feedback));
+        if (atoi(server_feedback))
+        {
+            // Send user to Server
+            if (send(socket_fd, &current_user, sizeof(struct _user), 0) < 0)
+            {
+                fprintf(stderr, "[-]%s\n", strerror(errno));
+                return 0;
+            }
+
+            // Recv server's feedback
+            if (recv(socket_fd, server_feedback, sizeof(server_feedback), 0) < 0)
+            {
+                fprintf(stderr, "[-]%s\n", strerror(errno));
+                return 0;
+            }
+            else
+            {
+                // Handling server's feedback
+                standardize_input(server_feedback, sizeof(server_feedback));
+                switch (atoi(server_feedback))
+                {
+                case 0:
+                    printf("[+]Sign out successfully\n");
+                    break;
+                case 1:
+                    printf("[-]Sign out failed\n");
+                    break;
+                default:
+                    printf("[-]Something wrong with server\n");
+                    break;
+                }
+            }
+        }
+        else
+        {
+            printf("[-]Something wrong with server\n");
+        }
+    }
+
+    return 1;
+}
+
+int exit_program(int socket_fd, User current_user)
+{
+    // Variables
+    char exit_signal[BUFFER_SIZE] = "3\0";
+    char server_feedback[BUFFER_SIZE];
+
+    // Send signal to server
+    if (send(socket_fd, exit_signal, sizeof(exit_signal), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 0;
+    }
+
+    // Recv server's feedback
+    if (recv(socket_fd, server_feedback, sizeof(server_feedback), MSG_WAITALL) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 0;
+    }
+    else
+    {
+        standardize_input(server_feedback, sizeof(server_feedback));
+        if (atoi(server_feedback))
+        {
+            // Send user to Server
+            if (send(socket_fd, &current_user, sizeof(struct _user), 0) < 0)
+            {
+                fprintf(stderr, "[-]%s\n", strerror(errno));
+                return 0;
+            }
+
+            // Recv server's feedback
+            if (recv(socket_fd, server_feedback, sizeof(server_feedback), 0) < 0)
+            {
+                fprintf(stderr, "[-]%s\n", strerror(errno));
+                return 0;
+            }
+            else
+            {
+                // Handling server's feedback
+                standardize_input(server_feedback, sizeof(server_feedback));
+                switch (atoi(server_feedback))
+                {
+                case 0:
+                    printf("[+]Sign out successfully\n");
+                    break;
+                case 1:
+                    printf("[-]Sign out failed\n");
+                    break;
+                default:
+                    printf("[-]Something wrong with server\n");
+                    break;
+                }
+            }
+        }
+        else
+        {
+            printf("[-]Something wrong with server\n");
+        }
+    }
+
+    return 1;
+}
+
 void app(int socket_fd)
 {
     // Variables
     char choice[BUFFER_SIZE];
     char bye[BUFFER_SIZE] = "bye\n\0";
+    User current_user;
 
     while (1)
     {
-        if (sign_in(socket_fd))
+        if (sign_in(socket_fd, &current_user))
         {
             printf("[+]Do you want to change password?(y/n/bye): ");
         choice:
@@ -229,18 +360,18 @@ void app(int socket_fd)
 
             if (choice[0] == 121)
             {
-                change_password(socket_fd);
+                change_password(socket_fd, current_user);
             }
             else if (choice[0] == 110)
             {
-                continue;
+                sign_out(socket_fd, current_user);
             }
             else
             {
-                // if (exit_program(socket_fd))
-                // {
-                //     printf("[+]Sign out successfully.\n");
-                // }
+                if(exit_program(socket_fd, current_user))
+                {
+                    printf("[+]Exit program\n");
+                }
             }
         }
     }
