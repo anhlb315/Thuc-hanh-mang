@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
                     {
                         printf("[+]Server accept the client_address\n");
                         FD_SET(connect_fd, &current_sockets);
-                        if (connect_fd > socket_count)
+                        if (connect_fd >= socket_count)
                         {
                             socket_count = connect_fd + 1;
                         }
