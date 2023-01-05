@@ -43,7 +43,10 @@ int sign_in(int socket_fd, User *current_user)
         username:
             printf("[+]Username: ");
             if (fgets(username, sizeof(username), stdin) == NULL)
+            {
+                printf("[-]Error: fgets\n");
                 return 0;
+            }
 
             // Valid username
             if (check_spaces(username, strlen(username)))
@@ -56,7 +59,10 @@ int sign_in(int socket_fd, User *current_user)
         password:
             printf("[+]Password: ");
             if (fgets(password, sizeof(password), stdin) == NULL)
+            {
+                printf("[-]Error: fgets\n");
                 return 0;
+            }
 
             // Check for exit program
             if (strcmp(username, "\n") == 0 && strcmp(password, "\n") == 0)
@@ -73,6 +79,8 @@ int sign_in(int socket_fd, User *current_user)
             }
 
             // Create user
+            standardize_input(username, sizeof(username));
+            standardize_input(password, sizeof(password));
             strcpy(user.username, username);
             strcpy(user.password, password);
 
@@ -96,8 +104,8 @@ int sign_in(int socket_fd, User *current_user)
                 switch (atoi(server_feedback))
                 {
                 case 0:
-                    strcpy(user.username, username);
-                    strcpy(user.password, password);
+                    strcpy(current_user->username, username);
+                    strcpy(current_user->password, password);
                     printf("[+]OK\n");
                     break;
                 case 1:
@@ -181,6 +189,7 @@ int change_password(int socket_fd, User *current_user)
         }
 
         // Change current user password
+        standardize_input(confirm_password, sizeof(confirm_password));
         strcpy(current_user->password, confirm_password);
 
         // Send User with new password to Server
@@ -381,7 +390,7 @@ void app(int socket_fd)
             }
             else if (choice[0] == 'n')
             {
-                if(!sign_out(socket_fd, current_user))
+                if (!sign_out(socket_fd, current_user))
                 {
                     printf("[-]Error: sign_out\n");
                     return;

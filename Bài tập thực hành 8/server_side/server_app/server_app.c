@@ -46,7 +46,7 @@ int split(char *buffer, char *only_number, char *only_string)
     return 1;
 }
 
-void sign_in(int client_fd, Account *acc, Account *current_user)
+void sign_in(int client_fd, Account *acc)
 {
     // Variables
     User user;
@@ -88,52 +88,43 @@ void sign_in(int client_fd, Account *acc, Account *current_user)
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return;
     }
-    else
-    {
-        strcpy(current_user->username, user.username);
-        strcpy(current_user->password, user.password);
-    }
 
     return;
 }
 
-void change_password(int client_fd, Account *acc, Account *current_user)
+void change_password(int client_fd, Account *acc)
 {
     // Variables
-    char new_password[BUFFER_SIZE];
     char bye[100] = "bye\0";
     char only_number[BUFFER_SIZE], only_string[BUFFER_SIZE];
-    char feedback[BUFFER_SIZE];
+    int feedback;
+    char change_password_feedback[BUFFER_SIZE];
+    User user;
 
-    // Recv new password from Client
-    if (recv(client_fd, new_password, sizeof(new_password), 0) < 0)
+    // Recv User from client
+    if (recv(client_fd, &user, sizeof(struct _user), MSG_WAITALL) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return;
     }
     else
     {
-        standardize_input(new_password, sizeof(new_password));
-        if (account_change_password(acc, current_user->username, new_password))
+        printf("[+]User's username: %s\n", user.username);
+        printf("[+]User's password: %s\n", user.password);
+        feedback = account_change_password(acc, user.username, user.password);
+        if (feedback)
         {
-            if (send(client_fd, feedback, sizeof(feedback), 0) < 0)
-            {
-                fprintf(stderr, "[-]%s\n", strerror(errno));
-                return;
-            }
+            printf("[+]Change password successfully\n");
         }
-        if (split(new_password, only_number, only_string))
+        else
         {
-            if (send(client_fd, only_number, sizeof(only_number), 0) < 0)
-            {
-                fprintf(stderr, "[-]%s\n", strerror(errno));
-                return;
-            }
-            if (send(client_fd, only_string, sizeof(only_string), 0) < 0)
-            {
-                fprintf(stderr, "[-]%s\n", strerror(errno));
-                return;
-            }
+            printf("[-]Fail to change password\n");
+        }
+        sprintf(change_password_feedback, "%d", feedback);
+        if (send(client_fd, change_password_feedback, sizeof(change_password_feedback), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
         }
     }
 

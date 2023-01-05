@@ -33,7 +33,6 @@ int main(int argc, char *argv[])
     char feedback[BUFFER_SIZE];
     Account *acc = NULL;
     acc = read_account(acc);
-    Account current_user;
 
     if (port < 1 || port > 65535)
     {
@@ -92,7 +91,7 @@ int main(int argc, char *argv[])
             return 0;
         }
 
-        for (int i = 0; i <= socket_count; i++)
+        for (int i = 0; i < socket_count; i++)
         {
             if (FD_ISSET(i, &read_sockets))
             {
@@ -144,14 +143,19 @@ int main(int argc, char *argv[])
                             {
                             case 0:
                                 printf("[+]Sign in\n");
-                                sign_in(i, acc, &current_user);
+                                sign_in(i, acc);
                                 break;
                             case 1:
                                 printf("[+]Change password\n");
-                                change_password(i, acc, &current_user);
+                                change_password(i, acc);
                                 break;
                             case 2:
-                                printf("[+]Exit program\n");
+                                printf("[+]Sign Out\n");
+                                // sign_out(i, acc);
+                                break;
+                            case 3:
+                                printf("[+]Exit Program\n");
+                                // sign_out(i, acc);
                                 // Clear client_fd out of current_sockets
                                 FD_CLR(i, &current_sockets);
                                 break;
