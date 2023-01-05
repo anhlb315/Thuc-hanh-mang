@@ -10,7 +10,9 @@ do
 
     clear
 
-    ./server 8888 &
+    echo "[+]Port: $1"
+
+    ./server $1 &
 
     cd ..
 
