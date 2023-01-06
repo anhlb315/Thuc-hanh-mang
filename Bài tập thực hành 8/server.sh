@@ -10,9 +10,14 @@ do
 
     clear
 
-    echo "[+]Port: $1"
-
-    ./server $1 &
+    if [ -z "$1" ]
+    then
+        echo "[+]Port: 8888"
+        ./server 8888 &
+    else
+        echo "[+]Port: $1"
+        ./server $1 &
+    fi
 
     cd ..
 
