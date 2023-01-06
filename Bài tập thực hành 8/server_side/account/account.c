@@ -185,13 +185,13 @@ int account_sign_in(Account *acc, char *username, char *password)
         return 3;
     }
 
-    printf("[+]%s, sign in is successful!\n", username);
     Account *cur = acc;
     while (cur != NULL)
     {
         if (strcmp(cur->username, username) == 0)
         {
             cur->is_signed_in = 1;
+            printf("[+]%s, sign in is successful!\n", username);
         }
         cur = cur->next;
     }
