@@ -26,7 +26,7 @@ Account *register_account(Account *account);
 void update_file(Account *account);
 int account_sign_in(Account *acc, char *username, char *password);
 void search(Account *account);
-int sign_out(Account *account, char *username);
+int account_sign_out(Account *account, char *username);
 void free_list(Account *account);
 void activate(Account *account);
 int account_change_password(Account *acc, char *username, char *new_password);

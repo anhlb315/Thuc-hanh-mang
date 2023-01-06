@@ -270,10 +270,10 @@ int sign_out(int socket_fd, User current_user)
                 standardize_input(server_feedback, sizeof(server_feedback));
                 switch (atoi(server_feedback))
                 {
-                case 0:
+                case 1:
                     printf("[+]Sign out successfully\n");
                     break;
-                case 1:
+                case 0:
                     printf("[-]Sign out failed\n");
                     return 0;
                 default:
@@ -334,10 +334,10 @@ int exit_program(int socket_fd, User current_user)
                 standardize_input(server_feedback, sizeof(server_feedback));
                 switch (atoi(server_feedback))
                 {
-                case 0:
+                case 1:
                     printf("[+]Sign out successfully\n");
                     break;
-                case 1:
+                case 0:
                     printf("[-]Sign out failed\n");
                     return 0;
                 default:

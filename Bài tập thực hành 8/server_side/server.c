@@ -150,11 +150,11 @@ int main(int argc, char *argv[])
                                 break;
                             case 2:
                                 printf("[+]Sign Out\n");
-                                // sign_out(i, acc);
+                                sign_out(i, acc);
                                 break;
                             case 3:
                                 printf("[+]Exit Program\n");
-                                // sign_out(i, acc);
+                                sign_out(i, acc);
                                 // Clear client_fd out of current_sockets
                                 FD_CLR(i, &current_sockets);
                                 break;

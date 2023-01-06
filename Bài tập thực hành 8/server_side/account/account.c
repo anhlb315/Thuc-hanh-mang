@@ -185,7 +185,7 @@ int account_sign_in(Account *acc, char *username, char *password)
         return 3;
     }
 
-    printf("Hello %s, sign in is successful!\n", username);
+    printf("[+]%s, sign in is successful!\n", username);
     Account *cur = acc;
     while (cur != NULL)
     {
@@ -235,17 +235,17 @@ void search(Account *acc)
     return;
 }
 
-int sign_out(Account *acc, char *username)
+int account_sign_out(Account *acc, char *username)
 {
     if (check_user(acc, username) != 0)
     {
-        printf("Account does not exist!\n");
+        printf("[-]Account does not exist!\n");
         return 0;
     }
 
     if (check_signed_in(acc, username) == 0)
     {
-        printf("Yet signed in.\n");
+        printf("[-]Yet signed in.\n");
         return 0;
     }
 

@@ -131,3 +131,41 @@ void change_password(int client_fd, Account *acc)
 
     return;
 }
+
+int sign_out(int client_fd, Account *acc)
+{
+    // Variables
+    int feedback;
+    char sign_out_feedback[BUFFER_SIZE];
+    User user;
+
+    // Recv User from client
+    if (recv(client_fd, &user, sizeof(struct _user), MSG_WAITALL) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return;
+    }
+    else
+    {
+        printf("[+]User's username: %s\n", user.username);
+        printf("[+]User's password: %s\n", user.password);
+        feedback = account_sign_out(acc, user.username);
+        if (feedback)
+        {
+            printf("[+]%s sign out successfully\n", user.username);
+            current_user_get_info(acc, user.username);
+        }
+        else
+        {
+            printf("[-]%s fail to sign out\n", user.username);
+        }
+        sprintf(sign_out_feedback, "%d", feedback);
+        if (send(client_fd, sign_out_feedback, sizeof(sign_out_feedback), 0) < 0)
+        {
+            fprintf(stderr, "[-]%s\n", strerror(errno));
+            return;
+        }
+    }
+
+    return;
+}
