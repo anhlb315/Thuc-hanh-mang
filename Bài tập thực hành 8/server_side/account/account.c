@@ -52,12 +52,12 @@ int check_user(Account *account, char *username)
     return 1;
 }
 
-int check_password(Account *account, char *password)
+int check_password(Account *account, char *username, char *password)
 {
     Account *cur = account;
     while (cur != NULL)
     {
-        if (strcmp(cur->password, password) == 0)
+        if ((strcmp(cur->username, username) == 0) && (strcmp(cur->password, password) == 0))
         {
             return 0;
         }
@@ -179,7 +179,7 @@ int account_sign_in(Account *acc, char *username, char *password)
         // Account is either block or idle
         return 2;
     }
-    if (check_password(acc, password) != 0)
+    if (check_password(acc, username, password) != 0)
     {
         // Password is incorrect
         return 3;
@@ -277,70 +277,6 @@ void free_list(Account *head)
 int check_activate_code(char *activate_code, char *correct_activate_code)
 {
     return strcmp(activate_code, correct_activate_code);
-}
-
-void activate(Account *acc)
-{
-    printf("----Welcome to activate function.----\n");
-    char username[30];
-    char password[30];
-    char activate_code[30];
-    char correct_activate_code[30] = "20194616";
-
-    printf("Input your Username: ");
-    scanf("%s", username);
-    if (check_user(acc, username) != 0)
-    {
-        printf("Account does not exist!\n");
-        return;
-    }
-
-    printf("Input your Password: ");
-    scanf("%s", password);
-    if (check_password(acc, password) != 0)
-    {
-        printf("Password is incorrect!\n");
-        return;
-    }
-
-    int time = 4;
-    do
-    {
-        printf("Enter your activate code: ");
-        scanf("%s", activate_code);
-        if (check_activate_code(activate_code, correct_activate_code) != 0)
-        {
-            printf("Activate Code is not correct, enter again (%d times left).\n", time - 1);
-            time--;
-        }
-        else
-        {
-            Account *cur = acc;
-            while (cur != NULL)
-            {
-                if (strcmp(cur->username, username) == 0)
-                {
-                    cur->status = 1;
-                    printf("Change to activate successfully.\n");
-                }
-                cur = cur->next;
-            }
-            update_file(acc);
-            return;
-        }
-    } while (time != 0);
-    printf("This account is blocked!\n");
-    Account *cur = acc;
-    while (cur != NULL)
-    {
-        if (strcmp(cur->username, username) == 0)
-        {
-            cur->status = 0;
-        }
-        cur = cur->next;
-    }
-    update_file(acc);
-    return;
 }
 
 int account_change_password(Account *acc, char *username, char *new_password)
