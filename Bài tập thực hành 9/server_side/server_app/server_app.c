@@ -143,7 +143,7 @@ int sign_out(int client_fd, Account *acc)
     if (recv(client_fd, &user, sizeof(struct _user), MSG_WAITALL) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
-        return;
+        return 0;
     }
     else
     {
@@ -163,9 +163,9 @@ int sign_out(int client_fd, Account *acc)
         if (send(client_fd, sign_out_feedback, sizeof(sign_out_feedback), 0) < 0)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
-            return;
+            return 0;
         }
     }
 
-    return;
+    return 1;
 }
