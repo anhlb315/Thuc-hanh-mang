@@ -4,6 +4,7 @@ if [ ! -f "server_side/server" ]; then
     echo "[-]Server is not ready"
 elif [ -f "client_side/client" ]; then
     cd client_side
+    clear
     if [ -z "$1" ]
     then
         echo "[+]Port: 8888"
