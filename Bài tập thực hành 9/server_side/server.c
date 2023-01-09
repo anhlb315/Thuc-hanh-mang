@@ -9,6 +9,7 @@
 #include <unistd.h> // read(), write(), close()
 #include <pthread.h>
 #include <errno.h>
+#include <poll.h>
 #include "server_app/server_app.h"
 #define BUFFER_SIZE 1024
 
@@ -73,98 +74,142 @@ int main(int argc, char *argv[])
     else
         printf("[+]Server listening\n");
 
-    // Initialize current set
-    FD_ZERO(&current_sockets);
-    FD_SET(socket_fd, &current_sockets);
-    socket_count = socket_fd + 1;
+    // Initialize udfs
+    int ready, nfds = BUFFER_SIZE;
+    struct pollfd *ufds;
+    ufds = calloc(nfds + 1, sizeof(struct pollfd));
+    if (ufds == NULL)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 0;
+    }
 
+    ufds[0].fd = socket_fd;
+    ufds[0].events = POLLIN;
+    socket_count = 1;
+    for (int i = 1; i <= nfds; i++)
+    {
+        ufds[i].fd = -1;
+    }
+
+    int i;
     while (1)
     {
-        // Because select is destructive
-        read_sockets = current_sockets;
-
+        // Call poll()
         printf("[+]Socket count: %d\n", socket_count);
-        if (select(socket_count, &read_sockets, NULL, NULL, NULL) < 0)
+        printf("[+]Poll is blocking...\n");
+        if ((ready = poll(ufds, socket_count, -1)) == -1)
         {
             fprintf(stderr, "[-]%s\n", strerror(errno));
             return 0;
         }
+        printf("[+]Ready: %d\n", ready);
 
-        for (int i = 0; i < socket_count; i++)
+        // Handling returned ufds
+        if (ufds[0].revents & POLLIN)
         {
-            if (FD_ISSET(i, &read_sockets))
+            printf("[+]fd=%d; events: %s%s%s\n", ufds[0].fd,
+                   (ufds[0].revents & POLLIN) ? "POLLIN " : "",
+                   (ufds[0].revents & POLLHUP) ? "POLLHUP " : "",
+                   (ufds[0].revents & POLLERR) ? "POLLERR " : "");
+
+            /* new client connection */
+            connect_fd = accept(socket_fd, (struct sockaddr *)&client_address, &len);
+            if (connect_fd < 0)
             {
-                if (i == socket_fd)
+                fprintf(stderr, "[-]%s\n", strerror(errno));
+                return 0;
+            }
+
+            printf("[+]Server accept new client: %d\n", connect_fd);
+            for (i = 1; i < BUFFER_SIZE; i++)
+            {
+                if (ufds[i].fd < 0)
                 {
-                    // There is a new connection that we can accept
-                    connect_fd = accept(socket_fd, (struct sockaddr *)&client_address, &len);
-                    if (connect_fd < 0)
-                    {
-                        fprintf(stderr, "[-]%s\n", strerror(errno));
-                        return 0;
-                    }
-                    else
-                    {
-                        printf("[+]Server accept the client_address\n");
-                        FD_SET(connect_fd, &current_sockets);
-                        if (connect_fd >= socket_count)
-                        {
-                            socket_count = connect_fd + 1;
-                        }
-                    }
+                    /* save descriptor */
+                    ufds[i].fd = connect_fd;
+                    ufds[i].events = POLLIN;
+                    break;
+                }
+            }
+
+            if (i == BUFFER_SIZE)
+            {
+                printf("[-]Too many clients\n");
+                return 0;
+            }
+
+            // Increase socket count
+            if (i >= socket_count)
+            {
+                socket_count = i + 1;
+                printf("[+]Socket count: %d\n", socket_count);
+            }
+
+            /* no more readable descriptors */
+            ready = ready - 1;
+            if (ready <= 0)
+                continue;
+        }
+
+        for (i = 1; i <= socket_count; i++)
+        {
+            /* check all clients for data */
+            if (ufds[i].fd < 0)
+                continue;
+
+            printf("[+]fd=%d; events: %s%s%s\n", ufds[i].fd,
+                   (ufds[i].revents & POLLIN) ? "POLLIN " : "",
+                   (ufds[i].revents & POLLHUP) ? "POLLHUP " : "",
+                   (ufds[i].revents & POLLERR) ? "POLLERR " : "");
+
+            if (ufds[i].revents & (POLLIN | POLLERR))
+            {
+                // Recv client's signal
+                if (recv(ufds[i].fd, signal, sizeof(signal), MSG_WAITALL) < 0)
+                {
+                    fprintf(stderr, "[-]%s\n", strerror(errno));
+                    return 0;
+                }
+
+                // Send feedback to Client
+                sprintf(feedback, "%d", 1);
+                if (send(ufds[i].fd, feedback, sizeof(feedback), 0) < 0)
+                {
+                    fprintf(stderr, "[-]%s\n", strerror(errno));
+                    break;
                 }
                 else
                 {
-                    // Recv client's signal
-                    if (recv(i, signal, sizeof(signal), MSG_WAITALL) < 0)
+                    switch (atoi(signal))
                     {
-                        fprintf(stderr, "[-]%s\n", strerror(errno));
-                        // Send feedback to Client
-                        sprintf(feedback, "%d", 0);
-                        if (send(i, feedback, sizeof(feedback), 0) < 0)
-                        {
-                            fprintf(stderr, "[-]%s\n", strerror(errno));
-                        }
+                    case 0:
+                        printf("[+]Sign in\n");
+                        sign_in(ufds[i].fd, acc);
+                        break;
+                    case 1:
+                        printf("[+]Change password\n");
+                        change_password(ufds[i].fd, acc);
+                        break;
+                    case 2:
+                        printf("[+]Sign Out\n");
+                        sign_out(ufds[i].fd, acc);
+                        break;
+                    case 3:
+                        printf("[+]Exit Program\n");
+                        sign_out(ufds[i].fd, acc);
+                        // Clear client_fd out of current_sockets
+                        FD_CLR(i, &current_sockets);
+                        break;
+                    default:
+                        printf("[-]Something wrong with server\n");
                         break;
                     }
-                    else
-                    {
-                        // Send feedback to Client
-                        sprintf(feedback, "%d", 1);
-                        if (send(i, feedback, sizeof(feedback), 0) < 0)
-                        {
-                            fprintf(stderr, "[-]%s\n", strerror(errno));
-                            break;
-                        }
-                        else
-                        {
-                            switch (atoi(signal))
-                            {
-                            case 0:
-                                printf("[+]Sign in\n");
-                                sign_in(i, acc);
-                                break;
-                            case 1:
-                                printf("[+]Change password\n");
-                                change_password(i, acc);
-                                break;
-                            case 2:
-                                printf("[+]Sign Out\n");
-                                sign_out(i, acc);
-                                break;
-                            case 3:
-                                printf("[+]Exit Program\n");
-                                sign_out(i, acc);
-                                // Clear client_fd out of current_sockets
-                                FD_CLR(i, &current_sockets);
-                                break;
-                            default:
-                                printf("[-]Something wrong with server\n");
-                                break;
-                            }
-                        }
-                    }
                 }
+
+                /* no more readable descriptors */
+                if (--ready <= 0)
+                    break;
             }
         }
     }
