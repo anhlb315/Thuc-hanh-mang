@@ -83,6 +83,7 @@ int sign_in(int socket_fd, User *current_user)
             standardize_input(password, sizeof(password));
             strcpy(user.username, username);
             strcpy(user.password, password);
+            user.password_error = 3;
 
             // Send user to Server
             if (send(socket_fd, &user, sizeof(struct _user), 0) < 0)

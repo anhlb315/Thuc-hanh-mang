@@ -245,7 +245,7 @@ int account_sign_out(Account *acc, char *username)
 
     if (check_signed_in(acc, username) == 0)
     {
-        printf("[-]Already signed out.\n");
+        printf("[+]Already signed out.\n");
         return 1;
     }
 

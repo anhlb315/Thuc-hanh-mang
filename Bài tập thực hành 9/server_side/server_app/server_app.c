@@ -52,7 +52,6 @@ void sign_in(int client_fd, Account *acc)
     User user;
     char exit_program[100] = "exit_program\0";
     int feedback;
-    int password_incorrect_times = 3;
     char sign_in_feedback[BUFFER_SIZE];
     char only_number[BUFFER_SIZE], only_string[BUFFER_SIZE];
 
@@ -73,8 +72,8 @@ void sign_in(int client_fd, Account *acc)
     feedback = account_sign_in(acc, user.username, user.password);
     if (feedback == 3) // If wrong password
     {
-        password_incorrect_times--;
-        if (password_incorrect_times == 0)
+        user.password_error = user.password_error - 1;
+        if (user.password_error == 0)
         {
             change_current_account_status(acc, user.username, 2);
             feedback++; // 4 mean account is blocked
