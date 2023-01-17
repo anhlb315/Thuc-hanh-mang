@@ -8,14 +8,18 @@ int client_app(int socket_fd)
     switch (menu())
     {
     case 1: //- Login
-        if(login() == 0)
+        if(login(socket_fd) == 0)
         {
             printf("!!!Error: login");
             return 0;
         }
         break;
     case 2: //- Text
-        text();
+        if(text() == 0)
+        {
+            printf("!!!Error: text");
+            return 0;
+        }
         break;
     case 0: // Exit
         exit_program();
