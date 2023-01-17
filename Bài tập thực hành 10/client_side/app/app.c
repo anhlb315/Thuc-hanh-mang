@@ -15,14 +15,18 @@ int client_app(int socket_fd)
         }
         break;
     case 2: //- Text
-        if(text() == 0)
+        if(text(socket_fd) == 0)
         {
             printf("!!!Error: text");
             return 0;
         }
         break;
     case 0: // Exit
-        exit_program();
+        if(exit_program(socket_fd) == 0)
+        {
+            printf("!!!Error: exit_program");
+            return 0;
+        }
         break;
     default:
         printf("!!!Error: menu\n");

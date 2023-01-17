@@ -7,7 +7,8 @@ enum HEADER
     ERROR,
     OK,
     LOGIN,
-    TEXT
+    TEXT,
+    EXIT
 };
 
 typedef struct _message

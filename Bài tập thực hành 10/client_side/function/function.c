@@ -52,7 +52,7 @@ int login(int socket_fd)
     message.header = LOGIN;
     strcpy(message.login_name, login_name);
 
-    if(send(socket_fd, &message, sizeof(struct _message), 0) < 0)
+    if (send(socket_fd, &message, sizeof(struct _message), 0) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;
@@ -60,7 +60,7 @@ int login(int socket_fd)
 
     printf("Loading...\n");
 
-    if(recv(socket_fd, &message, sizeof(struct _message), 0) < 0)
+    if (recv(socket_fd, &message, sizeof(struct _message), 0) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;
@@ -98,7 +98,7 @@ int text(int socket_fd)
     message.header = TEXT;
     strcpy(message.text, text);
 
-    if(send(socket_fd, &message, sizeof(struct _message), 0) < 0)
+    if (send(socket_fd, &message, sizeof(struct _message), 0) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;
@@ -106,7 +106,7 @@ int text(int socket_fd)
 
     printf("Loading...\n");
 
-    if(recv(socket_fd, &message, sizeof(struct _message), 0) < 0)
+    if (recv(socket_fd, &message, sizeof(struct _message), 0) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;
@@ -130,5 +130,38 @@ int text(int socket_fd)
 
 int exit_program(int socket_fd)
 {
+    Message message;
+
+    printf("Exiting...\n");
+
+    message.header = EXIT;
+
+    if (send(socket_fd, &message, sizeof(struct _message), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 0;
+    }
+
+    printf("Loading...\n");
+
+    if (recv(socket_fd, &message, sizeof(struct _message), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 0;
+    }
+
+    switch (message.header)
+    {
+    case OK:
+        printf("%s\n", message.text);
+        break;
+    case ERROR:
+        printf("%s\n", message.text);
+        break;
+    default:
+        printf("!!!Something wrong with server\n");
+        break;
+    }
+
     return 0;
 }
