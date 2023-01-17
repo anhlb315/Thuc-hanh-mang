@@ -52,9 +52,9 @@ int main(int argc, char *argv[])
 	}
 	else
 		printf("Socket successfully created\n");
-	bzero(&server_address, sizeof(server_address));
 
 	// assign IP, PORT
+	bzero(&server_address, sizeof(server_address));
 	server_address.sin_family = AF_INET;
 	server_address.sin_addr.s_addr = inet_addr(ip_address);
 	server_address.sin_port = htons(port);
