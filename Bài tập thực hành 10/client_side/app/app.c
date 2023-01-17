@@ -11,21 +11,21 @@ menu:
     case 1: //- Login
         if (login(socket_fd) == 0)
         {
-            printf("!!!Error: login");
+            printf("!!!Error: login\n");
             return 0;
         }
         goto menu;
     case 2: //- Text
         if (text(socket_fd) == 0)
         {
-            printf("!!!Error: text");
+            printf("!!!Error: text\n");
             return 0;
         }
         goto menu;
     case 0: // Exit
         if (exit_program(socket_fd) == 0)
         {
-            printf("!!!Error: exit_program");
+            printf("!!!Error: exit_program\n");
             return 0;
         }
         return 1;
