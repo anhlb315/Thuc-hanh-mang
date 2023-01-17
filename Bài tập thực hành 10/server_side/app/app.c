@@ -14,6 +14,7 @@
 int server_app(int client_fd)
 {
     Message message;
+    char login_name[MEDIUM];
 
     while (1)
     {
@@ -31,10 +32,11 @@ int server_app(int client_fd)
             {
                 printf("!!!Error: login\n");
             }
+            strcpy(login_name, message.login_name);
             break;
         case TEXT:
             printf("Client (fd: %d) trying to send text\n", client_fd);
-            if (text(client_fd, message.login_name) == 0)
+            if (text(client_fd, login_name, message.text) == 0)
             {
                 printf("!!!Error: text\n");
             }

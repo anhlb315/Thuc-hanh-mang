@@ -19,7 +19,7 @@ int login(int client_fd, char* login_name)
     return 0;
 }
 
-int text(int client_fd, char* text)
+int text(int client_fd, char* login_name, char* text)
 {
     standardize_input(text, sizeof(char)* LARGE);
     printf("text: %s\n", text);
