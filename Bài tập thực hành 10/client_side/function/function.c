@@ -60,7 +60,7 @@ int login(int socket_fd)
 
     printf("Loading...\n");
 
-    if (recv(socket_fd, &message, sizeof(struct _message), 0) < 0)
+    if (recv(socket_fd, &message, sizeof(struct _message), MSG_WAITALL) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;
@@ -106,7 +106,7 @@ int text(int socket_fd)
 
     printf("Loading...\n");
 
-    if (recv(socket_fd, &message, sizeof(struct _message), 0) < 0)
+    if (recv(socket_fd, &message, sizeof(struct _message), MSG_WAITALL) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;
@@ -144,7 +144,7 @@ int exit_program(int socket_fd)
 
     printf("Loading...\n");
 
-    if (recv(socket_fd, &message, sizeof(struct _message), 0) < 0)
+    if (recv(socket_fd, &message, sizeof(struct _message), MSG_WAITALL) < 0)
     {
         fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;
