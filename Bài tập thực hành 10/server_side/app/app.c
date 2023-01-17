@@ -10,6 +10,8 @@
 #include <signal.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <sys/wait.h>
+#include <sys/resource.h>
 
 int server_app(int client_fd)
 {
