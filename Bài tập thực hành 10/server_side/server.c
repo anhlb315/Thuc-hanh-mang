@@ -8,6 +8,7 @@
 #include <unistd.h> // read(), write(), close()
 #include <signal.h>
 #include <arpa/inet.h>
+#include <errno.h>
 #include "app/app.h"
 
 // Driver function
@@ -38,7 +39,7 @@ int main(int argc, char *argv[])
     socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (socket_fd == -1)
     {
-        printf("Error: Socket creation failed\n");
+        fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;
     }
     else
@@ -53,7 +54,7 @@ int main(int argc, char *argv[])
     // Binding newly created socket to given IP and verification
     if ((bind(socket_fd, (struct sockaddr *)&server_address, sizeof(server_address))) != 0)
     {
-        printf("Error: Socket bind failed\n");
+        fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;
     }
     else
@@ -62,7 +63,7 @@ int main(int argc, char *argv[])
     // Now server is ready to listen and verification
     if ((listen(socket_fd, 5)) != 0)
     {
-        printf("Error: Listen failed\n");
+        fprintf(stderr, "[-]%s\n", strerror(errno));
         return 0;
     }
     else
@@ -78,7 +79,7 @@ int main(int argc, char *argv[])
         connect_fd = accept(socket_fd, (struct sockaddr *)&client_address, &client_address_size);
         if (connect_fd < 0)
         {
-            printf("Error: Server accept failed\n");
+            fprintf(stderr, "[-]%s\n", strerror(errno));
             return 0;
         }
         else

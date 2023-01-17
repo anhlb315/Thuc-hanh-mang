@@ -2,7 +2,8 @@
 #define MEDIUM 512
 #define LARGE 1024
 
-#define USER_DIR "data/user.txt"
+#define USERS_DIR "data/user.txt"
+#define USER_DIR "data/"
 
 enum HEADER
 {

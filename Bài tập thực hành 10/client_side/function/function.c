@@ -79,7 +79,7 @@ int login(int socket_fd)
         break;
     }
 
-    return 0;
+    return 1;
 }
 
 int text(int socket_fd)
@@ -119,13 +119,13 @@ int text(int socket_fd)
         break;
     case ERROR:
         printf("%s\n", message.text);
-        break;
+        return 0;
     default:
         printf("!!!Something wrong with server\n");
-        break;
+        return 0;
     }
 
-    return 0;
+    return 1;
 }
 
 int exit_program(int socket_fd)
@@ -157,11 +157,11 @@ int exit_program(int socket_fd)
         break;
     case ERROR:
         printf("%s\n", message.text);
-        break;
+        return 0;
     default:
         printf("!!!Something wrong with server\n");
-        break;
+        return 0;
     }
 
-    return 0;
+    return 1;
 }

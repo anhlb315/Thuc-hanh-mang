@@ -49,14 +49,12 @@ int server_app(int client_fd)
             {
                 printf("!!!Error: client_exit\n");
             }
-            break;
+            return 0;
         default:
             printf("!!!Something wrong with client\n");
             break;
         }
     }
-
-    return 0;
 }
 
 void sig_chld(int signo)
