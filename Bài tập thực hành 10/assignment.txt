@@ -1,0 +1,11 @@
+Tạo chương trình UPD/TCP client/server hoạt động như sau:
+- Client có thể gửi đến máy chủ tên đăng nhập (login name) hoặc 1 bản tin
+- Nếu client gửi login name thì server đồng ý kết nối và nhớ login name này
+- Nếu client gửi 1 tin nhắn văn bản, server lưu tin nhắn này vào 1 file log. Mỗi client sẽ có 1 file log riêng.
+
+Cần làm:
+- Xác định message type cho login và text message
+- Xác định các trường trong mỗi mesage và độ dài cũng như kiểu của từng trường
+- Xác định xem client/server xử lý các message như thế nào
+- Vễ protocol state machine
+- Coding
