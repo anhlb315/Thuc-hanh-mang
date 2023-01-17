@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     client_address_size = sizeof(client_address);
 
     // Handling SIGCHLD Signals
-    signal(SIGCHLD, NULL);
+    signal(SIGCHLD, sig_chld);
 
     // Accept the data packet from client_address and verification
     while (1)

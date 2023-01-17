@@ -54,3 +54,11 @@ int server_app(int client_fd)
 
     return 0;
 }
+
+void sig_chld(int signo)
+{
+    pid_t pid;
+    int stat;
+    pid = waitpid(-1, &stat, WNOHANG);
+    printf("Child %d terminated\n", pid);
+}
