@@ -6,13 +6,7 @@
 #include <strings.h> // bzero()
 #include <sys/socket.h>
 #include <unistd.h> // read(), write(), close()
-#define BUFFER_SIZE 1024
-#define PORT 8080
-
-void func(int socket_fd)
-{
-	return;
-}
+#include "app/app.h"
 
 int main(int argc, char *argv[])
 {
@@ -69,7 +63,7 @@ int main(int argc, char *argv[])
 		printf("Connected to the server\n");
 
 	// function for chat
-	func(socket_fd);
+	client_app(socket_fd);
 
 	// close the socket
 	close(socket_fd);
