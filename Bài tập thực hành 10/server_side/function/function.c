@@ -14,21 +14,48 @@
 
 int login(int client_fd, char* login_name)
 {
+    FILE* file;
+
     standardize_input(login_name, sizeof(char) * MEDIUM);
     printf("login_name: %s\n", login_name);
-    return 0;
+
+    file = fopen(USER_DIR, "w+");
+    if(file == NULL)
+    {
+        printf("!!!Cannot open file: %s", USER_DIR);
+        return 0;
+    }
+
+    fprintf(file, "%s\n", login_name);
+
+    fclose(file);
+
+    return 1;
 }
 
 int text(int client_fd, char* login_name, char* text)
 {
+    FILE* user_file;
+
     standardize_input(text, sizeof(char)* LARGE);
+    printf("login_name: %s\n", login_name);
     printf("text: %s\n", text);
-    return 0;
+
+    user_file = fopen(USER_DIR, "r");
+    if (user_file == NULL)
+    {
+        printf("!!!Cannot open file: %s", USER_DIR);
+        return 0;
+    }
+
+    
+
+    return 1;
 }
 
 int client_exit(int client_fd)
 {
     close(client_fd);
     printf("Client (fd: %d) exited\n", client_fd);
-    return 0;
+    return 1;
 }

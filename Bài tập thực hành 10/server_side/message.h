@@ -2,6 +2,8 @@
 #define MEDIUM 512
 #define LARGE 1024
 
+#define USER_DIR "data/user.txt"
+
 enum HEADER
 {
     ERROR,
