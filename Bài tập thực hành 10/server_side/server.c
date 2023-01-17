@@ -8,13 +8,7 @@
 #include <unistd.h> // read(), write(), close()
 #include <signal.h>
 #include <arpa/inet.h>
-#define BUFFER_SIZE 1024
-#define PORT 8080
-
-void func(int connect_fd)
-{
-    return;
-}
+#include "app/app.h"
 
 // Driver function
 int main(int argc, char *argv[])
@@ -32,7 +26,7 @@ int main(int argc, char *argv[])
     struct sockaddr_in server_address, client_address;
     int pid;
     int child_counter = 0;
-    char client_address_str[BUFFER_SIZE];
+    char client_address_str[LARGE];
 
     if (port < 1 || port > 65535)
     {
@@ -96,7 +90,7 @@ int main(int argc, char *argv[])
         if ((pid = fork()) == 0)
         {
             close(socket_fd);
-            func(connect_fd);
+            server_app(connect_fd);
             close(connect_fd);
             exit(0);
         }
