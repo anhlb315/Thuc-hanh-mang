@@ -1,3 +1,7 @@
+#define SMALL 256
+#define MEDIUM 512
+#define LARGE 1024
+
 enum HEADER
 {
     ERROR,
@@ -9,6 +13,6 @@ enum HEADER
 typedef struct _message
 {
     int header;
-    char username[512];
-    char text[1024];
+    char login_name[MEDIUM];
+    char text[LARGE];
 } Message;

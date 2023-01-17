@@ -63,7 +63,11 @@ int main(int argc, char *argv[])
 		printf("Connected to the server\n");
 
 	// function for chat
-	client_app(socket_fd);
+	if (client_app(socket_fd) == 0)
+	{	
+		printf("!!!Error: client_app\n");
+		return 0;
+	}
 
 	// close the socket
 	close(socket_fd);

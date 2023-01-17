@@ -1,3 +1,5 @@
+#include "../message.h"
+
 int menu();
 int login();
 int text();

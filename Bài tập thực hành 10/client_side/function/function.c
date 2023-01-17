@@ -1,11 +1,17 @@
+#include <arpa/inet.h> // inet_addr()
+#include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define BUFFER_SIZE 1024
+#include <strings.h> // bzero()
+#include <sys/socket.h>
+#include <unistd.h> // read(), write(), close()
+#include <errno.h>
+#include "function.h"
 
 int menu()
 {
-    char user_choice[BUFFER_SIZE];
+    char user_choice[SMALL];
     int choice;
 
     printf("-----MENU-----\n");
@@ -14,7 +20,7 @@ int menu()
     printf("0. Exit\n");
     printf("Do: ");
 menu_choice:
-    if (fgets(user_choice, sizeof(BUFFER_SIZE), stdin) == NULL)
+    if (fgets(user_choice, sizeof(user_choice), stdin) == NULL)
     {
         printf("!!!Error: fgets\n");
         return 0;
@@ -30,8 +36,47 @@ menu_choice:
     return choice;
 }
 
-int login()
+int login(int socket_fd)
 {
+    char login_name[MEDIUM];
+    Message message;
+
+    printf("-----LOGIN-----\n");
+    printf("Your login name: ");
+    if (fgets(login_name, sizeof(login_name), stdin) == NULL)
+    {
+        printf("!!!Error: fgets\n");
+        return 0;
+    }
+
+    message.header = LOGIN;
+    strcpy(message.login_name, login_name);
+
+    if(send(socket_fd, &message, sizeof(struct _message), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 0;
+    }
+
+    if(recv(socket_fd, &message, sizeof(struct _message), 0) < 0)
+    {
+        fprintf(stderr, "[-]%s\n", strerror(errno));
+        return 0;
+    }
+
+    switch (message.header)
+    {
+    case OK:
+        printf("%s\n", message.text);
+        break;
+    case ERROR:
+        printf("%s\n", message.text);
+        break;
+    default:
+        printf("!!!Something wrong with server\n");
+        break;
+    }
+
     return 0;
 }
 

@@ -8,7 +8,11 @@ int client_app(int socket_fd)
     switch (menu())
     {
     case 1: //- Login
-        login();
+        if(login() == 0)
+        {
+            printf("!!!Error: login");
+            return 0;
+        }
         break;
     case 2: //- Text
         text();
