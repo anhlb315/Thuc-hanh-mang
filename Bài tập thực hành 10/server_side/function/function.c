@@ -16,11 +16,13 @@ int login(int client_fd, char *login_name)
 {
     FILE *file;
     Message message;
+    int found = 0;
+    char username[MEDIUM];
 
     standardize_input(login_name, sizeof(char) * MEDIUM);
     printf("login_name: %s\n", login_name);
 
-    file = fopen(USERS_DIR, "w+");
+    file = fopen(USERS_DIR, "a+");
     if (file == NULL)
     {
         printf("!!!Cannot open file: %s", USERS_DIR);
@@ -37,7 +39,21 @@ int login(int client_fd, char *login_name)
         return 0;
     }
 
-    fprintf(file, "%s\n", login_name);
+    while (!feof(file))
+    {
+        fscanf(file, "%s\n", username);
+        if (strcmp(username, login_name) == 0)
+        {
+            found = 1;
+            break;
+        }
+    }
+
+    if (!found)
+    {
+        fseek(file, 0, SEEK_END);
+        fprintf(file, "%s\n", login_name);
+    }
 
     fclose(file);
 
@@ -90,9 +106,11 @@ int text(int client_fd, char *login_name, char *text)
         {
             found = 1;
             sprintf(text_file_dir, "%s%s.txt", USER_DIR, username);
-            text_file = fopen(text_file_dir, "w+");
+            text_file = fopen(text_file_dir, "a+");
+            fseek(text_file, 0, SEEK_END);
             fprintf(text_file, "%s\n", text);
             fclose(text_file);
+            break;
         }
     }
 
